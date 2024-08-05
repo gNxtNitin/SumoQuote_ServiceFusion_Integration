@@ -10,15 +10,6 @@
         },
         "runtimeSource": "embedded"
       },
-      "shared_excelonline-1": {
-        "api": {
-          "name": "shared_excelonline"
-        },
-        "connection": {
-          "connectionReferenceLogicalName": "new_sharedexcelonline_3b266"
-        },
-        "runtimeSource": "embedded"
-      },
       "shared_excelonline": {
         "api": {
           "name": "shared_excelonline"
@@ -28,12 +19,12 @@
         },
         "runtimeSource": "embedded"
       },
-      "shared_uiflow-1": {
+      "shared_uiflow": {
         "api": {
           "name": "shared_uiflow"
         },
         "connection": {
-          "connectionReferenceLogicalName": "new_shareduiflow_0d4d2"
+          "connectionReferenceLogicalName": "cr570_shareduiflow_bd671"
         },
         "runtimeSource": "embedded"
       }
@@ -100,10 +91,10 @@
                   "inputs": {
                     "name": "LogText",
                     "value": {
-                      "@variables('LogTextColNames')?[0]": "@utcNow()",
+                      "@variables('LogTextColNames')?[0]": "@formatDateTime(utcNow(), 'dd-MM-yyyy hh:mm:ss')",
                       "@variables('LogTextColNames')?[1]": "Cloud Flow",
                       "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
-                      "@variables('LogTextColNames')?[3]": "INFO",
+                      "@variables('LogTextColNames')?[3]": "Info",
                       "@variables('LogTextColNames')?[4]": "Selected Option Found - Tier1"
                     }
                   }
@@ -154,10 +145,10 @@
                   "inputs": {
                     "name": "LogText",
                     "value": {
-                      "@variables('LogTextColNames')?[0]": "@utcNow()",
+                      "@variables('LogTextColNames')?[0]": "@formatDateTime(utcNow(), 'dd-MM-yyyy hh:mm:ss')",
                       "@variables('LogTextColNames')?[1]": "Cloud Flow",
                       "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
-                      "@variables('LogTextColNames')?[3]": "INFO",
+                      "@variables('LogTextColNames')?[3]": "Info",
                       "@variables('LogTextColNames')?[4]": "Selected Option Found - Tier2"
                     }
                   }
@@ -208,10 +199,10 @@
                   "inputs": {
                     "name": "LogText",
                     "value": {
-                      "@variables('LogTextColNames')?[0]": "@utcNow()",
+                      "@variables('LogTextColNames')?[0]": "@formatDateTime(utcNow(), 'dd-MM-yyyy hh:mm:ss')",
                       "@variables('LogTextColNames')?[1]": "Cloud Flow",
                       "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
-                      "@variables('LogTextColNames')?[3]": "INFO",
+                      "@variables('LogTextColNames')?[3]": "Info",
                       "@variables('LogTextColNames')?[4]": "Selected Option Found - Tier3"
                     }
                   }
@@ -279,7 +270,7 @@
                   "inputs": {
                     "name": "LogText",
                     "value": {
-                      "@variables('LogTextColNames')?[0]": "@utcNow()",
+                      "@variables('LogTextColNames')?[0]": "@formatDateTime(utcNow(), 'dd-MM-yyyy hh:mm:ss')",
                       "@variables('LogTextColNames')?[1]": "Cloud Flow",
                       "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
                       "@variables('LogTextColNames')?[3]": "Error",
@@ -430,10 +421,10 @@
                   "inputs": {
                     "name": "LogText",
                     "value": {
-                      "@variables('LogTextColNames')?[0]": "@utcNow()",
+                      "@variables('LogTextColNames')?[0]": "@formatDateTime(utcNow(), 'dd-MM-yyyy hh:mm:ss')",
                       "@variables('LogTextColNames')?[1]": "Cloud Flow",
                       "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
-                      "@variables('LogTextColNames')?[3]": "INFO",
+                      "@variables('LogTextColNames')?[3]": "Info",
                       "@variables('LogTextColNames')?[4]": "Additional Option Selected - True"
                     }
                   }
@@ -443,10 +434,10 @@
                   "inputs": {
                     "name": "LogText",
                     "value": {
-                      "@variables('LogTextColNames')?[0]": "@utcNow()",
+                      "@variables('LogTextColNames')?[0]": "@formatDateTime(utcNow(), 'dd-MM-yyyy hh:mm:ss')",
                       "@variables('LogTextColNames')?[1]": "Cloud Flow",
                       "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
-                      "@variables('LogTextColNames')?[3]": "INFO",
+                      "@variables('LogTextColNames')?[3]": "Info",
                       "@variables('LogTextColNames')?[4]": "Additional Options CSV Created Successfully"
                     }
                   },
@@ -464,10 +455,10 @@
                     "inputs": {
                       "name": "LogText",
                       "value": {
-                        "@variables('LogTextColNames')?[0]": "@utcNow()",
+                        "@variables('LogTextColNames')?[0]": "@formatDateTime(utcNow(), 'dd-MM-yyyy hh:mm:ss')",
                         "@variables('LogTextColNames')?[1]": "Cloud Flow",
                         "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
-                        "@variables('LogTextColNames')?[3]": "INFO",
+                        "@variables('LogTextColNames')?[3]": "Info",
                         "@variables('LogTextColNames')?[4]": "Additional Options Selected - False"
                       }
                     }
@@ -730,7 +721,7 @@
                 "host": {
                   "apiId": "/providers/Microsoft.PowerApps/apis/shared_excelonline",
                   "operationId": "PatchItem",
-                  "connectionName": "shared_excelonline-1"
+                  "connectionName": "shared_excelonline"
                 }
               },
               "runAfter": {
@@ -804,10 +795,10 @@
               "inputs": {
                 "name": "LogText",
                 "value": {
-                  "@variables('LogTextColNames')?[0]": "@utcNow()",
+                  "@variables('LogTextColNames')?[0]": "@formatDateTime(utcNow(), 'dd-MM-yyyy hh:mm:ss')",
                   "@variables('LogTextColNames')?[1]": "Cloud Flow",
                   "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
-                  "@variables('LogTextColNames')?[3]": "INFO",
+                  "@variables('LogTextColNames')?[3]": "Info",
                   "@variables('LogTextColNames')?[4]": "Getting Selected Quote Option Details"
                 }
               }
@@ -817,10 +808,10 @@
               "inputs": {
                 "name": "LogText",
                 "value": {
-                  "@variables('LogTextColNames')?[0]": "@utcNow()",
+                  "@variables('LogTextColNames')?[0]": "@formatDateTime(utcNow(), 'dd-MM-yyyy hh:mm:ss')",
                   "@variables('LogTextColNames')?[1]": "Cloud Flow",
                   "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
-                  "@variables('LogTextColNames')?[3]": "INFO",
+                  "@variables('LogTextColNames')?[3]": "Info",
                   "@variables('LogTextColNames')?[4]": "Checking If CON or RES Based On Option Selection"
                 }
               }
@@ -830,10 +821,10 @@
               "inputs": {
                 "name": "LogText",
                 "value": {
-                  "@variables('LogTextColNames')?[0]": "@utcNow()",
+                  "@variables('LogTextColNames')?[0]": "@formatDateTime(utcNow(), 'dd-MM-yyyy hh:mm:ss')",
                   "@variables('LogTextColNames')?[1]": "Cloud Flow",
                   "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
-                  "@variables('LogTextColNames')?[3]": "INFO",
+                  "@variables('LogTextColNames')?[3]": "Info",
                   "@variables('LogTextColNames')?[4]": "Checked If Customer is Contractor - @{variables('IsContractor')}"
                 }
               },
@@ -848,10 +839,10 @@
               "inputs": {
                 "name": "LogText",
                 "value": {
-                  "@variables('LogTextColNames')?[0]": "@utcNow()",
+                  "@variables('LogTextColNames')?[0]": "@formatDateTime(utcNow(), 'dd-MM-yyyy hh:mm:ss')",
                   "@variables('LogTextColNames')?[1]": "Cloud Flow",
                   "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
-                  "@variables('LogTextColNames')?[3]": "INFO",
+                  "@variables('LogTextColNames')?[3]": "Info",
                   "@variables('LogTextColNames')?[4]": "Getting Signed Report PDF file from SumoQuote"
                 }
               },
@@ -866,10 +857,10 @@
               "inputs": {
                 "name": "LogText",
                 "value": {
-                  "@variables('LogTextColNames')?[0]": "@utcNow()",
+                  "@variables('LogTextColNames')?[0]": "@formatDateTime(utcNow(), 'dd-MM-yyyy hh:mm:ss')",
                   "@variables('LogTextColNames')?[1]": "Cloud Flow",
                   "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
-                  "@variables('LogTextColNames')?[3]": "INFO",
+                  "@variables('LogTextColNames')?[3]": "Info",
                   "@variables('LogTextColNames')?[4]": "Signed Report PDF Download and stored on OneDrive"
                 }
               },
@@ -1003,7 +994,7 @@
                   "inputs": {
                     "name": "LogText",
                     "value": {
-                      "@variables('LogTextColNames')?[0]": "@utcNow()",
+                      "@variables('LogTextColNames')?[0]": "@formatDateTime(utcNow(), 'dd-MM-yyyy hh:mm:ss')",
                       "@variables('LogTextColNames')?[1]": "Cloud Flow",
                       "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
                       "@variables('LogTextColNames')?[3]": "Error",
@@ -1051,7 +1042,7 @@
                 "host": {
                   "apiId": "/providers/Microsoft.PowerApps/apis/shared_uiflow",
                   "operationId": "RunUIFlow_V2",
-                  "connectionName": "shared_uiflow-1"
+                  "connectionName": "shared_uiflow"
                 }
               },
               "runAfter": {
@@ -1080,8 +1071,8 @@
               },
               "runAfter": {
                 "Run_a_flow_built_with_Power_Automate_for_desktop": [
-                  "FAILED",
-                  "TIMEDOUT"
+                  "Failed",
+                  "TimedOut"
                 ]
               },
               "runtimeConfiguration": {
@@ -1095,7 +1086,7 @@
               "inputs": {
                 "name": "LogText",
                 "value": {
-                  "@variables('LogTextColNames')?[0]": "@utcNow()",
+                  "@variables('LogTextColNames')?[0]": "@formatDateTime(utcNow(), 'dd-MM-yyyy hh:mm:ss')",
                   "@variables('LogTextColNames')?[1]": "Cloud Flow",
                   "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
                   "@variables('LogTextColNames')?[3]": "Error",
@@ -1113,10 +1104,10 @@
               "inputs": {
                 "name": "LogText",
                 "value": {
-                  "@variables('LogTextColNames')?[0]": "@utcNow()",
+                  "@variables('LogTextColNames')?[0]": "@formatDateTime(utcNow(), 'dd-MM-yyyy hh:mm:ss')",
                   "@variables('LogTextColNames')?[1]": "Cloud Flow",
                   "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
-                  "@variables('LogTextColNames')?[3]": "INFO",
+                  "@variables('LogTextColNames')?[3]": "Info",
                   "@variables('LogTextColNames')?[4]": "Desktop Flow Run Started"
                 }
               }
@@ -1231,10 +1222,10 @@
                       "inputs": {
                         "name": "LogText",
                         "value": {
-                          "@variables('LogTextColNames')?[0]": "@utcNow()",
+                          "@variables('LogTextColNames')?[0]": "@formatDateTime(utcNow(), 'dd-MM-yyyy hh:mm:ss')",
                           "@variables('LogTextColNames')?[1]": "Cloud Flow",
                           "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
-                          "@variables('LogTextColNames')?[3]": "INFO",
+                          "@variables('LogTextColNames')?[3]": "Info",
                           "@variables('LogTextColNames')?[4]": "Name Check Condition - True"
                         }
                       }
@@ -1258,10 +1249,10 @@
                         "inputs": {
                           "name": "LogText",
                           "value": {
-                            "@variables('LogTextColNames')?[0]": "@utcNow()",
+                            "@variables('LogTextColNames')?[0]": "@formatDateTime(utcNow(), 'dd-MM-yyyy hh:mm:ss')",
                             "@variables('LogTextColNames')?[1]": "Cloud Flow",
                             "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
-                            "@variables('LogTextColNames')?[3]": "INFO",
+                            "@variables('LogTextColNames')?[3]": "Info",
                             "@variables('LogTextColNames')?[4]": "Name Check Condition - False, Terminating The Flow"
                           }
                         }
@@ -1271,10 +1262,10 @@
                         "inputs": {
                           "name": "LogText",
                           "value": {
-                            "@variables('LogTextColNames')?[0]": "@utcNow()",
+                            "@variables('LogTextColNames')?[0]": "@formatDateTime(utcNow(), 'dd-MM-yyyy hh:mm:ss')",
                             "@variables('LogTextColNames')?[1]": "Cloud Flow",
                             "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
-                            "@variables('LogTextColNames')?[3]": "INFO",
+                            "@variables('LogTextColNames')?[3]": "Info",
                             "@variables('LogTextColNames')?[4]": "Flow Terminated with status Cancelled. Debug Condition Failed for Name Check"
                           }
                         },
@@ -1297,10 +1288,10 @@
                   "inputs": {
                     "name": "LogText",
                     "value": {
-                      "@variables('LogTextColNames')?[0]": "@utcNow()",
+                      "@variables('LogTextColNames')?[0]": "@formatDateTime(utcNow(), 'dd-MM-yyyy hh:mm:ss')",
                       "@variables('LogTextColNames')?[1]": "Cloud Flow",
                       "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
-                      "@variables('LogTextColNames')?[3]": "INFO",
+                      "@variables('LogTextColNames')?[3]": "Info",
                       "@variables('LogTextColNames')?[4]": "Debug Mode condition - True"
                     }
                   }
@@ -1313,10 +1304,10 @@
                     "inputs": {
                       "name": "LogText",
                       "value": {
-                        "@variables('LogTextColNames')?[0]": "@utcNow()",
+                        "@variables('LogTextColNames')?[0]": "@formatDateTime(utcNow(), 'dd-MM-yyyy hh:mm:ss')",
                         "@variables('LogTextColNames')?[1]": "Cloud Flow",
                         "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
-                        "@variables('LogTextColNames')?[3]": "INFO",
+                        "@variables('LogTextColNames')?[3]": "Info",
                         "@variables('LogTextColNames')?[4]": "Debug Mode condition - False"
                       }
                     }
@@ -1412,10 +1403,10 @@
           "inputs": {
             "name": "LogText",
             "value": {
-              "@variables('LogTextColNames')?[0]": "@utcNow()",
+              "@variables('LogTextColNames')?[0]": "@formatDateTime(utcNow(), 'dd-MM-yyyy hh:mm:ss')",
               "@variables('LogTextColNames')?[1]": "Cloud Flow",
               "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
-              "@variables('LogTextColNames')?[3]": "INFO",
+              "@variables('LogTextColNames')?[3]": "Info",
               "@variables('LogTextColNames')?[4]": "Update SignedReportDetails Flow Started"
             }
           },
@@ -1430,7 +1421,7 @@
           "inputs": {
             "name": "LogText",
             "value": {
-              "@variables('LogTextColNames')?[0]": "@utcNow()",
+              "@variables('LogTextColNames')?[0]": "@formatDateTime(utcNow(), 'dd-MM-yyyy hh:mm:ss')",
               "@variables('LogTextColNames')?[1]": "Cloud Flow",
               "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
               "@variables('LogTextColNames')?[3]": "Error",
@@ -1486,10 +1477,10 @@
           "inputs": {
             "name": "LogText",
             "value": {
-              "@variables('LogTextColNames')?[0]": "@utcNow()",
+              "@variables('LogTextColNames')?[0]": "@formatDateTime(utcNow(), 'dd-MM-yyyy hh:mm:ss')",
               "@variables('LogTextColNames')?[1]": "Cloud Flow",
               "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
-              "@variables('LogTextColNames')?[3]": "INFO",
+              "@variables('LogTextColNames')?[3]": "Info",
               "@variables('LogTextColNames')?[4]": "Config Details Read Successfully"
             }
           },
@@ -1504,10 +1495,10 @@
           "inputs": {
             "name": "LogText",
             "value": {
-              "@variables('LogTextColNames')?[0]": "@utcNow()",
+              "@variables('LogTextColNames')?[0]": "@formatDateTime(utcNow(), 'dd-MM-yyyy hh:mm:ss')",
               "@variables('LogTextColNames')?[1]": "Cloud Flow",
               "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
-              "@variables('LogTextColNames')?[3]": "INFO",
+              "@variables('LogTextColNames')?[3]": "Info",
               "@variables('LogTextColNames')?[4]": "Reading Config Details Started"
             }
           },
@@ -1572,10 +1563,10 @@
           "inputs": {
             "name": "LogText",
             "value": {
-              "@variables('LogTextColNames')?[0]": "@utcNow()",
+              "@variables('LogTextColNames')?[0]": "@formatDateTime(utcNow(), 'dd-MM-yyyy hh:mm:ss')",
               "@variables('LogTextColNames')?[1]": "Cloud Flow",
               "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
-              "@variables('LogTextColNames')?[3]": "INFO",
+              "@variables('LogTextColNames')?[3]": "Info",
               "@variables('LogTextColNames')?[4]": "Saving Logfile to OneDrive and calling desktop flow"
             }
           },
