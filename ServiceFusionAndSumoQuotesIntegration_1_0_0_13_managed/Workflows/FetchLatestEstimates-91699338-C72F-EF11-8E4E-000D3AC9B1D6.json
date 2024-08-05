@@ -1,0 +1,2596 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_excelonline": {
+        "api": {
+          "name": "shared_excelonline"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "cr570_ExcelOnlineServiceFusionSumoQuoteIntegration"
+        },
+        "runtimeSource": "embedded"
+      },
+      "shared_onedrive": {
+        "api": {
+          "name": "shared_onedrive"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "cr570_sharedonedrive_0881d"
+        },
+        "runtimeSource": "embedded"
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        }
+      },
+      "triggers": {
+        "Repeat_Every_5_Minutes": {
+          "type": "Recurrence",
+          "recurrence": {
+            "frequency": "Minute",
+            "interval": 5,
+            "startTime": "2024-06-21T14:45:00Z"
+          },
+          "runtimeConfiguration": {
+            "concurrency": {
+              "runs": 1
+            }
+          },
+          "metadata": {
+            "operationMetadataId": "f2e8d993-efba-4333-825f-dbd9949b3b07"
+          }
+        }
+      },
+      "actions": {
+        "Fetch_Latest_Estimate_List": {
+          "type": "Scope",
+          "actions": {
+            "Get_Access_Token": {
+              "type": "Scope",
+              "actions": {
+                "Get_Config_Details": {
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "parameters": {
+                      "file": "E550BD3B3E47E33!118",
+                      "table": "{510501A4-37B7-4231-B3A5-C718A87FBC97}",
+                      "idColumn": "ID",
+                      "id": "919293"
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_excelonline",
+                      "operationId": "GetItem",
+                      "connectionName": "shared_excelonline"
+                    }
+                  },
+                  "runAfter": {
+                    "Log_Text_-_1": [
+                      "Succeeded"
+                    ]
+                  },
+                  "runtimeConfiguration": {
+                    "secureData": {
+                      "properties": [
+                        "inputs",
+                        "outputs"
+                      ]
+                    }
+                  },
+                  "metadata": {
+                    "E550BD3B3E47E33!118": "/Config/ConfigMain.xlsx",
+                    "operationMetadataId": "abfd35a2-dcc5-4a67-84a0-0c81b92e91c5"
+                  }
+                },
+                "LastFetchedDateTime": {
+                  "type": "Compose",
+                  "inputs": "@formatDateTime(body('Get_Config_Details')?['NextRetriveDateTime'], 'yyyy-MM-ddT00:00:00-00:00')",
+                  "runAfter": {
+                    "Log_Text_-_2": [
+                      "Succeeded"
+                    ]
+                  },
+                  "metadata": {
+                    "operationMetadataId": "6b8bb0a1-eecd-4d9b-970d-e07b88f87d40"
+                  }
+                },
+                "Get_Access_Token_By_Refresh_Token": {
+                  "type": "Http",
+                  "inputs": {
+                    "uri": "https://api.servicefusion.com/oauth/access_token",
+                    "method": "POST",
+                    "body": {
+                      "grant_type": "refresh_token",
+                      "refresh_token": "@{body('Get_Config_Details')?['RefreshToken']}"
+                    }
+                  },
+                  "runAfter": {
+                    "Log_Text_-_3": [
+                      "Succeeded"
+                    ]
+                  },
+                  "runtimeConfiguration": {
+                    "contentTransfer": {
+                      "transferMode": "Chunked"
+                    },
+                    "secureData": {
+                      "properties": [
+                        "inputs",
+                        "outputs"
+                      ]
+                    }
+                  },
+                  "metadata": {
+                    "operationMetadataId": "4fba159e-2133-4e6f-a8f7-c6a61e707656"
+                  }
+                },
+                "Get_Access_Token_By_Authentication_If_Previous_Step_Fails": {
+                  "type": "Http",
+                  "inputs": {
+                    "uri": "https://api.servicefusion.com/oauth/access_token",
+                    "method": "POST",
+                    "body": {
+                      "grant_type": "client_credentials",
+                      "client_id": "@{body('Get_Config_Details')?['ClientID']}",
+                      "client_secret": "@{body('Get_Config_Details')?['ClientSecret']}"
+                    }
+                  },
+                  "runAfter": {
+                    "Get_Access_Token_By_Refresh_Token": [
+                      "TimedOut",
+                      "Failed"
+                    ]
+                  },
+                  "runtimeConfiguration": {
+                    "contentTransfer": {
+                      "transferMode": "Chunked"
+                    },
+                    "secureData": {
+                      "properties": [
+                        "inputs",
+                        "outputs"
+                      ]
+                    }
+                  },
+                  "metadata": {
+                    "operationMetadataId": "624eed08-36f9-47df-a098-7c991cbde96f"
+                  }
+                },
+                "If_Access_Token_From_Refresh_Token": {
+                  "type": "If",
+                  "expression": {
+                    "and": [
+                      {
+                        "equals": [
+                          "@outputs('Get_Access_Token_By_Refresh_Token')?['statusCode']",
+                          200
+                        ]
+                      }
+                    ]
+                  },
+                  "actions": {
+                    "Access_token_from_Refresh_token": {
+                      "type": "SetVariable",
+                      "inputs": {
+                        "name": "AccessToken",
+                        "value": "@{body('Get_Access_Token_By_Refresh_Token')?['access_token']}"
+                      },
+                      "runAfter": {
+                        "Update_Refresh_token_in_config_-_Got_from_refresh_token_authentication": [
+                          "Succeeded"
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "9b51b702-6b84-405d-8e39-e11c5162bc91"
+                      }
+                    },
+                    "Update_Refresh_token_in_config_-_Got_from_refresh_token_authentication": {
+                      "type": "OpenApiConnection",
+                      "inputs": {
+                        "parameters": {
+                          "file": "E550BD3B3E47E33!118",
+                          "table": "{510501A4-37B7-4231-B3A5-C718A87FBC97}",
+                          "idColumn": "ID",
+                          "id": "919293",
+                          "item/RefreshToken": "@{body('Get_Access_Token_By_Refresh_Token')?['refresh_token']}"
+                        },
+                        "host": {
+                          "apiId": "/providers/Microsoft.PowerApps/apis/shared_excelonline",
+                          "operationId": "PatchItem",
+                          "connectionName": "shared_excelonline"
+                        }
+                      },
+                      "metadata": {
+                        "E550BD3B3E47E33!118": "/Config/ConfigMain.xlsx",
+                        "operationMetadataId": "806ae3f8-d3a9-4e3b-b2b5-6c20c81712f7"
+                      }
+                    },
+                    "Log_Text_-_4": {
+                      "type": "AppendToArrayVariable",
+                      "inputs": {
+                        "name": "LogText",
+                        "value": {
+                          "@variables('LogTextColNames')?[0]": "@utcNow()",
+                          "@variables('LogTextColNames')?[1]": "Cloud Flow",
+                          "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
+                          "@variables('LogTextColNames')?[3]": "INFO",
+                          "@variables('LogTextColNames')?[4]": "Access Token Recieved from Refresh token authentication"
+                        }
+                      },
+                      "runAfter": {
+                        "Access_token_from_Refresh_token": [
+                          "Succeeded"
+                        ]
+                      }
+                    }
+                  },
+                  "else": {
+                    "actions": {
+                      "Access_token_from_Client_Authentication": {
+                        "type": "SetVariable",
+                        "inputs": {
+                          "name": "AccessToken",
+                          "value": "@{body('Get_Access_Token_By_Authentication_If_Previous_Step_Fails')?['access_token']}"
+                        },
+                        "runAfter": {
+                          "Update_Refresh_token_in_config_-_Got_from_client_cred_authentication": [
+                            "Succeeded"
+                          ]
+                        },
+                        "metadata": {
+                          "operationMetadataId": "a1539ba7-5a48-45e2-9c8f-21d5495ede08"
+                        }
+                      },
+                      "Update_Refresh_token_in_config_-_Got_from_client_cred_authentication": {
+                        "type": "OpenApiConnection",
+                        "inputs": {
+                          "parameters": {
+                            "file": "E550BD3B3E47E33!118",
+                            "table": "{510501A4-37B7-4231-B3A5-C718A87FBC97}",
+                            "idColumn": "ID",
+                            "id": "919293",
+                            "item/RefreshToken": "@{body('Get_Access_Token_By_Authentication_If_Previous_Step_Fails')?['refresh_token']}"
+                          },
+                          "host": {
+                            "apiId": "/providers/Microsoft.PowerApps/apis/shared_excelonline",
+                            "operationId": "PatchItem",
+                            "connectionName": "shared_excelonline"
+                          }
+                        },
+                        "metadata": {
+                          "E550BD3B3E47E33!118": "/Config/ConfigMain.xlsx",
+                          "operationMetadataId": "c35af58b-2ce8-4dd8-9220-eb3e4f20e0ca"
+                        }
+                      },
+                      "Log_Text_-_5": {
+                        "type": "AppendToArrayVariable",
+                        "inputs": {
+                          "name": "LogText",
+                          "value": {
+                            "@variables('LogTextColNames')?[0]": "@utcNow()",
+                            "@variables('LogTextColNames')?[1]": "Cloud Flow",
+                            "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
+                            "@variables('LogTextColNames')?[3]": "INFO",
+                            "@variables('LogTextColNames')?[4]": "Access Token Recieved from Refresh Client key authentication"
+                          }
+                        },
+                        "runAfter": {
+                          "Access_token_from_Client_Authentication": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  "runAfter": {
+                    "Get_Access_Token_By_Authentication_If_Previous_Step_Fails": [
+                      "Succeeded",
+                      "Skipped"
+                    ],
+                    "Get_Access_Token_By_Refresh_Token": [
+                      "Succeeded",
+                      "Failed",
+                      "TimedOut"
+                    ]
+                  },
+                  "metadata": {
+                    "operationMetadataId": "60c54dd5-f0d8-48ae-befa-5fd9bbbd7635"
+                  }
+                },
+                "Log_Text_-_Config_Read_Failed": {
+                  "type": "AppendToArrayVariable",
+                  "inputs": {
+                    "name": "LogText",
+                    "value": {
+                      "@variables('LogTextColNames')?[0]": "@utcNow()",
+                      "@variables('LogTextColNames')?[1]": "Cloud Flow",
+                      "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
+                      "@variables('LogTextColNames')?[3]": "Error",
+                      "@variables('LogTextColNames')?[4]": "Reading Config File Failed"
+                    }
+                  },
+                  "runAfter": {
+                    "Get_Config_Details": [
+                      "TimedOut",
+                      "Failed"
+                    ]
+                  }
+                },
+                "Create_CSV_table-Config_Read_Failure": {
+                  "type": "Table",
+                  "inputs": {
+                    "from": "@variables('LogText')",
+                    "format": "CSV"
+                  },
+                  "runAfter": {
+                    "Log_Text_-_Config_Read_Failed": [
+                      "Succeeded"
+                    ]
+                  }
+                },
+                "Create_file_LogText_on_OneDrive-Config_Read_Failure": {
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "parameters": {
+                      "folderPath": "/Logs/SumoQuote Project",
+                      "name": "@substring(variables('LogFilePath'), add(lastIndexOf(variables('LogFilePath'), '/'),1))",
+                      "body": "@body('Create_CSV_table-Config_Read_Failure')"
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_onedrive",
+                      "operationId": "CreateFile",
+                      "connectionName": "shared_onedrive"
+                    }
+                  },
+                  "runAfter": {
+                    "Create_CSV_table-Config_Read_Failure": [
+                      "Succeeded"
+                    ]
+                  },
+                  "runtimeConfiguration": {
+                    "contentTransfer": {
+                      "transferMode": "Chunked"
+                    }
+                  }
+                },
+                "Send_Email_-_Support_-_Failed_to_read_Config_Data": {
+                  "type": "Http",
+                  "inputs": {
+                    "uri": "@body('Get_Config_Details')?['EmailTriggerURL']",
+                    "method": "POST",
+                    "body": {
+                      "emailtype": "support",
+                      "flowtype": "cloud flow",
+                      "supportEmailContent": {
+                        "flowName": "@{workflow()?['tags']?['flowDisplayName']}",
+                        "failedAction": "Get Config Details",
+                        "failureMessage": "@{body('Get_Config_Details')}",
+                        "flowRunURL": "@{concat('https://make.powerautomate.com/manage/environments/', workflow()?['tags']?['environmentName'], '/flows/', workflow()?['name'], '/runs/', workflow()?['run']['name'])}",
+                        "LogFilePath": "@{variables('LogFilePath')}"
+                      },
+                      "clientEmailContent": {}
+                    }
+                  },
+                  "runAfter": {
+                    "Create_file_LogText_on_OneDrive-Config_Read_Failure": [
+                      "Succeeded"
+                    ]
+                  },
+                  "runtimeConfiguration": {
+                    "contentTransfer": {
+                      "transferMode": "Chunked"
+                    }
+                  }
+                },
+                "Log_Text_-_1": {
+                  "type": "AppendToArrayVariable",
+                  "inputs": {
+                    "name": "LogText",
+                    "value": {
+                      "@variables('LogTextColNames')?[0]": "@utcNow()",
+                      "@variables('LogTextColNames')?[1]": "Cloud Flow",
+                      "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
+                      "@variables('LogTextColNames')?[3]": "INFO",
+                      "@variables('LogTextColNames')?[4]": "Reading Config Details From Excel"
+                    }
+                  }
+                },
+                "Log_Text_-_2": {
+                  "type": "AppendToArrayVariable",
+                  "inputs": {
+                    "name": "LogText",
+                    "value": {
+                      "@variables('LogTextColNames')?[0]": "@utcNow()",
+                      "@variables('LogTextColNames')?[1]": "Cloud Flow",
+                      "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
+                      "@variables('LogTextColNames')?[3]": "INFO",
+                      "@variables('LogTextColNames')?[4]": "Config Details Read Successfully"
+                    }
+                  },
+                  "runAfter": {
+                    "Get_Config_Details": [
+                      "Succeeded"
+                    ]
+                  }
+                },
+                "Log_Text_-_3": {
+                  "type": "AppendToArrayVariable",
+                  "inputs": {
+                    "name": "LogText",
+                    "value": {
+                      "@variables('LogTextColNames')?[0]": "@utcNow()",
+                      "@variables('LogTextColNames')?[1]": "Cloud Flow",
+                      "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
+                      "@variables('LogTextColNames')?[3]": "INFO",
+                      "@variables('LogTextColNames')?[4]": "Getting Access Token"
+                    }
+                  },
+                  "runAfter": {
+                    "LastFetchedDateTime": [
+                      "Succeeded"
+                    ]
+                  }
+                }
+              },
+              "metadata": {
+                "operationMetadataId": "f93c3d39-a4d7-480d-9698-1b829f4d46cd"
+              }
+            },
+            "Fetch_Estimates_until_All_pages_Fetched": {
+              "type": "Until",
+              "expression": "@greater(variables('CurrentPage'),variables('PageCount'))",
+              "limit": {
+                "timeout": "PT1H"
+              },
+              "actions": {
+                "Fetch_Estimates_List_Based_On_LatestFetchedDate": {
+                  "type": "Http",
+                  "inputs": {
+                    "uri": "https://api.servicefusion.com/v1/estimates",
+                    "method": "GET",
+                    "queries": {
+                      "fields": "number,customer_id,contact_first_name,contact_last_name,street_1, street_2, city, state_prov, postal_code,created_at",
+                      "filters[requested_date][gte]": "@{outputs('LastFetchedDateTime')}",
+                      "access_token": "@{variables('AccessToken')}",
+                      "per-page": "50",
+                      "page": "@{variables('CurrentPage')}",
+                      "expand": "custom_fields"
+                    }
+                  },
+                  "runtimeConfiguration": {
+                    "contentTransfer": {
+                      "transferMode": "Chunked"
+                    },
+                    "secureData": {
+                      "properties": [
+                        "inputs"
+                      ]
+                    }
+                  },
+                  "metadata": {
+                    "operationMetadataId": "b1636aba-c07a-4cae-8f75-7627fde32b0e"
+                  }
+                },
+                "If_Fetch_Request_Succeeded": {
+                  "type": "If",
+                  "expression": {
+                    "and": [
+                      {
+                        "equals": [
+                          "@outputs('Fetch_Estimates_List_Based_On_LatestFetchedDate')?['statusCode']",
+                          200
+                        ]
+                      }
+                    ]
+                  },
+                  "actions": {
+                    "Set_variable_PageCount": {
+                      "type": "SetVariable",
+                      "inputs": {
+                        "name": "PageCount",
+                        "value": "@body('Fetch_Estimates_List_Based_On_LatestFetchedDate')?['_meta']?['pageCount']"
+                      },
+                      "metadata": {
+                        "operationMetadataId": "3d968d5a-1c8a-4322-9208-00638e9df2a2"
+                      }
+                    },
+                    "For_each_Estimate_in_the_Response": {
+                      "type": "Foreach",
+                      "foreach": "@body('Fetch_Estimates_List_Based_On_LatestFetchedDate')?['items']",
+                      "actions": {
+                        "Append_to_array_EstimatesList": {
+                          "type": "AppendToArrayVariable",
+                          "inputs": {
+                            "name": "EstimatesList",
+                            "value": "@items('For_each_Estimate_in_the_Response')"
+                          },
+                          "metadata": {
+                            "operationMetadataId": "6592b38e-fbf6-4d22-933a-8b4d7d7f1be8"
+                          }
+                        }
+                      },
+                      "runAfter": {
+                        "Set_variable_PageCount": [
+                          "Succeeded"
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "05a9b85e-d141-45ba-a667-ce67c0f1aedf"
+                      }
+                    },
+                    "Increment_variable_CurrentPage": {
+                      "type": "IncrementVariable",
+                      "inputs": {
+                        "name": "CurrentPage",
+                        "value": 1
+                      },
+                      "runAfter": {
+                        "For_each_Estimate_in_the_Response": [
+                          "Succeeded"
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "d3a62d9b-2d36-4b2c-97dc-c8941ca322ef"
+                      }
+                    }
+                  },
+                  "else": {
+                    "actions": {
+                      "Failed_Message_-_Status_Code_Other_than_200": {
+                        "type": "Compose",
+                        "inputs": "@body('Fetch_Estimates_List_Based_On_LatestFetchedDate')"
+                      }
+                    }
+                  },
+                  "runAfter": {
+                    "Fetch_Estimates_List_Based_On_LatestFetchedDate": [
+                      "Succeeded"
+                    ]
+                  },
+                  "metadata": {
+                    "operationMetadataId": "2fa39f41-b941-4f4e-85d5-1f08243027d1"
+                  }
+                }
+              },
+              "runAfter": {
+                "Log_Text_-_6": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "d0a4b023-5c28-4c88-97d4-6a477939f2b0"
+              }
+            },
+            "Parse_and_Store_Estimates": {
+              "type": "Scope",
+              "actions": {
+                "For_Each_Estimate_in_Estimates_List": {
+                  "type": "Foreach",
+                  "foreach": "@body('Filter_Array_and_Remove_Previous_Fetched_Estimates_from_current_Estimate_List')",
+                  "actions": {
+                    "Get_Customer_Contact_Detail": {
+                      "type": "Http",
+                      "inputs": {
+                        "uri": "https://api.servicefusion.com/v1/customers/@{body('Parse_CurrentEstimateItem_JSON')?['customer_id']}",
+                        "method": "GET",
+                        "queries": {
+                          "access_token": "@{variables('AccessToken')}",
+                          "expand": "contacts, contacts.phones, contacts.emails",
+                          "fields": "id, customer_name"
+                        }
+                      },
+                      "runAfter": {
+                        "Log_Text_-_12": [
+                          "Succeeded"
+                        ]
+                      },
+                      "runtimeConfiguration": {
+                        "contentTransfer": {
+                          "transferMode": "Chunked"
+                        },
+                        "secureData": {
+                          "properties": [
+                            "inputs"
+                          ]
+                        }
+                      },
+                      "metadata": {
+                        "operationMetadataId": "0396e452-a77e-4e54-a7da-b939e3f8fd9b"
+                      }
+                    },
+                    "Parse_CurrentEstimateItem_JSON": {
+                      "type": "ParseJson",
+                      "inputs": {
+                        "content": "@items('For_Each_Estimate_in_Estimates_List')",
+                        "schema": {
+                          "type": "object",
+                          "properties": {
+                            "number": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "created_at": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "customer_id": {
+                              "type": "integer"
+                            },
+                            "contact_first_name": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "contact_last_name": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "street_1": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "street_2": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "city": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "state_prov": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "postal_code": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "custom_fields": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "name": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "value": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "type": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "group": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "created_at": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "updated_at": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "is_required": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "required": [
+                                  "name",
+                                  "value"
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "metadata": {
+                        "operationMetadataId": "eafb0923-9a4f-4700-9989-1efbbd31714c"
+                      }
+                    },
+                    "If_Request_Succeeded_For_Get_Contact_Details": {
+                      "type": "If",
+                      "expression": {
+                        "equals": [
+                          "@outputs('Get_Customer_Contact_Detail')?['statusCode']",
+                          200
+                        ]
+                      },
+                      "actions": {
+                        "Parse_Customer_Contact_JSON": {
+                          "type": "ParseJson",
+                          "inputs": {
+                            "content": "@body('Get_Customer_Contact_Detail')",
+                            "schema": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "integer"
+                                },
+                                "customer_name": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                },
+                                "contacts": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "prefix": {},
+                                      "fname": {
+                                        "type": [
+                                          "string",
+                                          "null"
+                                        ]
+                                      },
+                                      "lname": {
+                                        "type": [
+                                          "string",
+                                          "null"
+                                        ]
+                                      },
+                                      "suffix": {},
+                                      "contact_type": {},
+                                      "job_title": {},
+                                      "department": {},
+                                      "dob": {},
+                                      "anniversary": {},
+                                      "created_at": {},
+                                      "updated_at": {
+                                        "type": [
+                                          "string",
+                                          "null"
+                                        ]
+                                      },
+                                      "is_primary": {
+                                        "type": "boolean"
+                                      },
+                                      "phones": {
+                                        "type": [
+                                          "array",
+                                          "null"
+                                        ],
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "phone": {
+                                              "type": [
+                                                "string",
+                                                "null"
+                                              ]
+                                            },
+                                            "ext": {},
+                                            "type": {
+                                              "type": [
+                                                "string",
+                                                "null"
+                                              ]
+                                            },
+                                            "created_at": {
+                                              "type": [
+                                                "string",
+                                                "null"
+                                              ]
+                                            },
+                                            "updated_at": {
+                                              "type": [
+                                                "string",
+                                                "null"
+                                              ]
+                                            },
+                                            "is_mobile": {
+                                              "type": "boolean"
+                                            }
+                                          },
+                                          "required": [
+                                            "phone",
+                                            "ext",
+                                            "type",
+                                            "created_at",
+                                            "updated_at",
+                                            "is_mobile"
+                                          ]
+                                        }
+                                      },
+                                      "emails": {
+                                        "type": [
+                                          "array",
+                                          "null"
+                                        ],
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "email": {
+                                              "type": [
+                                                "string",
+                                                "null"
+                                              ]
+                                            },
+                                            "class": {
+                                              "type": [
+                                                "string",
+                                                "null"
+                                              ]
+                                            },
+                                            "types_accepted": {},
+                                            "created_at": {},
+                                            "updated_at": {
+                                              "type": [
+                                                "string",
+                                                "null"
+                                              ]
+                                            }
+                                          },
+                                          "required": [
+                                            "email"
+                                          ]
+                                        }
+                                      }
+                                    },
+                                    "required": [
+                                      "is_primary",
+                                      "phones",
+                                      "emails"
+                                    ]
+                                  }
+                                },
+                                "_expandable": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "runAfter": {
+                            "Log_Text_-_13": [
+                              "Succeeded"
+                            ]
+                          },
+                          "metadata": {
+                            "operationMetadataId": "afcde1d4-ab31-4e8a-93c4-151c91cd672b"
+                          }
+                        },
+                        "If_Primary_Contact_Found": {
+                          "type": "If",
+                          "expression": {
+                            "and": [
+                              {
+                                "equals": [
+                                  "@empty(body('Get_Primary_Contact'))",
+                                  "@false"
+                                ]
+                              }
+                            ]
+                          },
+                          "actions": {
+                            "Get_Phone_Number": {
+                              "type": "Query",
+                              "inputs": {
+                                "from": "@body('Get_Primary_Contact')?[0]?['phones']",
+                                "where": "@not(equals(item()?['phone'],null))"
+                              },
+                              "runAfter": {
+                                "Log_Text_-_16": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "metadata": {
+                                "operationMetadataId": "598c4809-54bb-4f89-a9ad-961b9a75e46a"
+                              }
+                            },
+                            "Get_Email": {
+                              "type": "Query",
+                              "inputs": {
+                                "from": "@body('Get_Primary_Contact')?[0]?['emails']",
+                                "where": "@not(equals(item()?['email'],null))"
+                              },
+                              "runAfter": {
+                                "Get_Phone_Number": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "metadata": {
+                                "operationMetadataId": "dc7c8393-8931-44ff-84f9-d02a7612725c"
+                              }
+                            },
+                            "IF_Project_Created_Successfully": {
+                              "type": "If",
+                              "expression": {
+                                "and": [
+                                  {
+                                    "equals": [
+                                      "@outputs('Create_Project_On_SumoQuote')?['statusCode']",
+                                      200
+                                    ]
+                                  }
+                                ]
+                              },
+                              "actions": {
+                                "Update_The_Estimate_Row_When_Project_Created_On_SumoQuote": {
+                                  "type": "OpenApiConnection",
+                                  "inputs": {
+                                    "parameters": {
+                                      "file": "E550BD3B3E47E33!109",
+                                      "table": "{EFFBB888-A54E-422B-A988-4DCDAA21FA1B}",
+                                      "idColumn": "EstimateNo",
+                                      "id": "@body('Parse_CurrentEstimateItem_JSON')?['number']",
+                                      "item/ProjectNo": "@body('Create_Project_On_SumoQuote')?['Data']?['ProjectIdDisplay']",
+                                      "item/SumoQuoteProjectID": "@body('Create_Project_On_SumoQuote')?['Data']?['Id']",
+                                      "item/Status": "PROJCRETED"
+                                    },
+                                    "host": {
+                                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_excelonline",
+                                      "operationId": "PatchItem",
+                                      "connectionName": "shared_excelonline"
+                                    }
+                                  },
+                                  "runAfter": {
+                                    "Log_Text_-_19": [
+                                      "Succeeded"
+                                    ]
+                                  },
+                                  "metadata": {
+                                    "E550BD3B3E47E33!109": "/Estimates/FetchedEstimateDetails.xlsx",
+                                    "operationMetadataId": "75600018-a27c-4f07-a218-8b9f080c96cb"
+                                  }
+                                },
+                                "Log_Text_-_19": {
+                                  "type": "AppendToArrayVariable",
+                                  "inputs": {
+                                    "name": "LogText",
+                                    "value": {
+                                      "@variables('LogTextColNames')?[0]": "@utcNow()",
+                                      "@variables('LogTextColNames')?[1]": "Cloud Flow",
+                                      "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
+                                      "@variables('LogTextColNames')?[3]": "INFO",
+                                      "@variables('LogTextColNames')?[4]": "Created Project On SumoQuote for EstimateNo - @{body('Parse_CurrentEstimateItem_JSON')?['number']} successfully"
+                                    }
+                                  }
+                                }
+                              },
+                              "else": {
+                                "actions": {
+                                  "Log_Text_-_20": {
+                                    "type": "AppendToArrayVariable",
+                                    "inputs": {
+                                      "name": "LogText",
+                                      "value": {
+                                        "@variables('LogTextColNames')?[0]": "@utcNow()",
+                                        "@variables('LogTextColNames')?[1]": "Cloud Flow",
+                                        "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
+                                        "@variables('LogTextColNames')?[3]": "INFO",
+                                        "@variables('LogTextColNames')?[4]": "Project Could Not be Created On SumoQuote for EstimateNo - @{body('Parse_CurrentEstimateItem_JSON')?['number']}"
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              "runAfter": {
+                                "Create_Project_On_SumoQuote": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "metadata": {
+                                "operationMetadataId": "9652ab0b-94a8-422a-88e2-adc40e16c0af"
+                              }
+                            },
+                            "Create_Project_On_SumoQuote": {
+                              "type": "Http",
+                              "inputs": {
+                                "uri": "https://api.sumoquote.com/v1/Project",
+                                "method": "POST",
+                                "headers": {
+                                  "sq-api-key": "@{body('Get_Config_Details')?['SumoQuoteAPIKey']}"
+                                },
+                                "body": {
+                                  "projectId": "@body('Parse_CurrentEstimateItem_JSON')?['number']",
+                                  "customerFirstName": "@body('Parse_CurrentEstimateItem_JSON')?['contact_first_name']",
+                                  "customerLastName": "@body('Parse_CurrentEstimateItem_JSON')?['contact_last_name']",
+                                  "phoneNumber": "@variables('Phone')",
+                                  "emailAddress": "@if(empty(variables('Email')), null, variables('Email'))",
+                                  "addressLine1": "@if(empty(body('Parse_CurrentEstimateItem_JSON')?['street_1']), 'ADRESSLINE 1 IS NOT FOUND', body('Parse_CurrentEstimateItem_JSON')?['street_1'])",
+                                  "addressLine2": "@body('Parse_CurrentEstimateItem_JSON')?['street_2']",
+                                  "city": "@body('Parse_CurrentEstimateItem_JSON')?['city']",
+                                  "province": "@body('Parse_CurrentEstimateItem_JSON')?['state_prov']",
+                                  "postalCode": "@body('Parse_CurrentEstimateItem_JSON')?['postal_code']"
+                                }
+                              },
+                              "runAfter": {
+                                "Log_Text_-_18": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "runtimeConfiguration": {
+                                "contentTransfer": {
+                                  "transferMode": "Chunked"
+                                }
+                              },
+                              "metadata": {
+                                "operationMetadataId": "1b5b76d3-4241-4c53-9926-2696c3b55226"
+                              }
+                            },
+                            "Add_Estimate_to_Excel_Sheet": {
+                              "type": "OpenApiConnection",
+                              "inputs": {
+                                "parameters": {
+                                  "file": "E550BD3B3E47E33!109",
+                                  "table": "{EFFBB888-A54E-422B-A988-4DCDAA21FA1B}",
+                                  "item/EstimateNo": "@{body('Parse_CurrentEstimateItem_JSON')?['number']}",
+                                  "item/FirstName": "@body('Parse_CurrentEstimateItem_JSON')?['contact_first_name']",
+                                  "item/LastName": "@{body('Parse_CurrentEstimateItem_JSON')?['contact_last_name']}",
+                                  "item/CompanyName": "@{body('Parse_CurrentEstimateItem_JSON')?['contact_first_name']}",
+                                  "item/Phone": "@{variables('Phone')}",
+                                  "item/Email": "@{variables('Email')}",
+                                  "item/AddressLine1": "@{body('Parse_CurrentEstimateItem_JSON')?['street_1']}",
+                                  "item/AddressLine2": "@{body('Parse_CurrentEstimateItem_JSON')?['street_2']}",
+                                  "item/City": "@{body('Parse_CurrentEstimateItem_JSON')?['city']}",
+                                  "item/State": "@{body('Parse_CurrentEstimateItem_JSON')?['state_prov']}",
+                                  "item/ZipCode": "@{body('Parse_CurrentEstimateItem_JSON')?['postal_code']}",
+                                  "item/Status": "Fetched",
+                                  "item/DateTime (UTC)": "@{utcNow()}"
+                                },
+                                "host": {
+                                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_excelonline",
+                                  "operationId": "AddRowV2",
+                                  "connectionName": "shared_excelonline"
+                                }
+                              },
+                              "runAfter": {
+                                "Store_Phone_Value": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "metadata": {
+                                "E550BD3B3E47E33!109": "/Estimates/FetchedEstimateDetails.xlsx",
+                                "operationMetadataId": "b0b7d809-f093-429c-bbdb-e7986f330b79"
+                              }
+                            },
+                            "If__Email_Found": {
+                              "type": "If",
+                              "expression": {
+                                "and": [
+                                  {
+                                    "greater": [
+                                      "@length(body('Get_Email'))",
+                                      0
+                                    ]
+                                  }
+                                ]
+                              },
+                              "actions": {
+                                "Store_Email_Value_to_found_Email": {
+                                  "type": "SetVariable",
+                                  "inputs": {
+                                    "name": "Email",
+                                    "value": "@{body('Get_Email')?[0]?['email']}"
+                                  },
+                                  "metadata": {
+                                    "operationMetadataId": "89b07aaf-3cc3-47a5-a4aa-a978c1030670"
+                                  }
+                                }
+                              },
+                              "else": {
+                                "actions": {
+                                  "Store_Null_to_Email_Value": {
+                                    "type": "SetVariable",
+                                    "inputs": {
+                                      "name": "Email",
+                                      "value": "@null"
+                                    },
+                                    "metadata": {
+                                      "operationMetadataId": "89b07aaf-3cc3-47a5-a4aa-a978c1030670"
+                                    }
+                                  }
+                                }
+                              },
+                              "runAfter": {
+                                "Get_Email": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "metadata": {
+                                "operationMetadataId": "4e7b1ab4-d10a-40ec-aef0-51d04c0eb721"
+                              }
+                            },
+                            "Store_Phone_Value": {
+                              "type": "SetVariable",
+                              "inputs": {
+                                "name": "Phone",
+                                "value": "@{body('Get_Phone_Number')?[0]?['phone']}"
+                              },
+                              "runAfter": {
+                                "If__Email_Found": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "metadata": {
+                                "operationMetadataId": "9ae0d703-10e4-4dfd-9e10-4605a8256210"
+                              }
+                            },
+                            "Append_to_array_variable_FailedEstimateNoList": {
+                              "type": "AppendToArrayVariable",
+                              "inputs": {
+                                "name": "FailedEstimateNoList",
+                                "value": "@items('For_Each_Estimate_in_Estimates_List')?['number']"
+                              },
+                              "runAfter": {
+                                "Create_Project_On_SumoQuote": [
+                                  "Failed",
+                                  "TimedOut"
+                                ]
+                              }
+                            },
+                            "Get_Failed_Action_Details_-_4": {
+                              "type": "Compose",
+                              "inputs": "@actions('Create_Project_On_SumoQuote')",
+                              "runAfter": {
+                                "Append_to_array_variable_FailedEstimateNoList": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "metadata": {
+                                "operationMetadataId": "08f3e77a-b7d3-49bd-b1a4-1efdc91d19f2"
+                              }
+                            },
+                            "Send_Email_-_Support_-_Failed_To_Create_Project": {
+                              "type": "Http",
+                              "inputs": {
+                                "uri": "@body('Get_Config_Details')?['EmailTriggerURL']",
+                                "method": "POST",
+                                "body": {
+                                  "emailtype": "support",
+                                  "flowtype": "cloud flow",
+                                  "supportEmailContent": {
+                                    "flowName": "@{workflow()?['tags']?['flowDisplayName']}",
+                                    "failedAction": "@{outputs('Get_Failed_Action_Details_-_4')?['name']}",
+                                    "failureMessage": "@{body('Create_Project_On_SumoQuote')}",
+                                    "flowRunURL": "@{concat('https://make.powerautomate.com/manage/environments/', workflow()?['tags']?['environmentName'], '/flows/', workflow()?['name'], '/runs/', workflow()?['run']['name'])}",
+                                    "LogFilePath": "@{variables('LogFilePath')}"
+                                  },
+                                  "clientEmailContent": {}
+                                }
+                              },
+                              "runAfter": {
+                                "Create_file_LogText_on_OneDrive-Create_Project_Failed": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "runtimeConfiguration": {
+                                "contentTransfer": {
+                                  "transferMode": "Chunked"
+                                }
+                              }
+                            },
+                            "Log_Text_-_16": {
+                              "type": "AppendToArrayVariable",
+                              "inputs": {
+                                "name": "LogText",
+                                "value": {
+                                  "@variables('LogTextColNames')?[0]": "@utcNow()",
+                                  "@variables('LogTextColNames')?[1]": "Cloud Flow",
+                                  "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
+                                  "@variables('LogTextColNames')?[3]": "INFO",
+                                  "@variables('LogTextColNames')?[4]": "Primary Contact Found for EstimateNo - @{body('Parse_CurrentEstimateItem_JSON')?['number']}"
+                                }
+                              }
+                            },
+                            "Log_Text_-_18": {
+                              "type": "AppendToArrayVariable",
+                              "inputs": {
+                                "name": "LogText",
+                                "value": {
+                                  "@variables('LogTextColNames')?[0]": "@utcNow()",
+                                  "@variables('LogTextColNames')?[1]": "Cloud Flow",
+                                  "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
+                                  "@variables('LogTextColNames')?[3]": "INFO",
+                                  "@variables('LogTextColNames')?[4]": "Creating Project On SumoQuote for EstimateNo - @{body('Parse_CurrentEstimateItem_JSON')?['number']}"
+                                }
+                              },
+                              "runAfter": {
+                                "Add_Estimate_to_Excel_Sheet": [
+                                  "Succeeded"
+                                ]
+                              }
+                            },
+                            "Log_Text_-_21": {
+                              "type": "AppendToArrayVariable",
+                              "inputs": {
+                                "name": "LogText",
+                                "value": {
+                                  "@variables('LogTextColNames')?[0]": "@utcNow()",
+                                  "@variables('LogTextColNames')?[1]": "Cloud Flow",
+                                  "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
+                                  "@variables('LogTextColNames')?[3]": "Error",
+                                  "@variables('LogTextColNames')?[4]": "Project Could Not Be Created For EstimateNo - @{body('Parse_CurrentEstimateItem_JSON')?['number']}, Error - @{body('Create_Project_On_SumoQuote')}"
+                                }
+                              },
+                              "runAfter": {
+                                "Get_Failed_Action_Details_-_4": [
+                                  "Succeeded"
+                                ]
+                              }
+                            },
+                            "Create_CSV_table_-_Create_Project_Failed": {
+                              "type": "Table",
+                              "inputs": {
+                                "from": "@variables('LogText')",
+                                "format": "CSV"
+                              },
+                              "runAfter": {
+                                "Log_Text_-_21": [
+                                  "Succeeded"
+                                ]
+                              }
+                            },
+                            "Create_file_LogText_on_OneDrive-Create_Project_Failed": {
+                              "type": "OpenApiConnection",
+                              "inputs": {
+                                "parameters": {
+                                  "folderPath": "/Logs/SumoQuote Project",
+                                  "name": "@substring(variables('LogFilePath'), add(lastIndexOf(variables('LogFilePath'), '/'),1))",
+                                  "body": "@body('Create_CSV_table_-_Create_Project_Failed')"
+                                },
+                                "host": {
+                                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_onedrive",
+                                  "operationId": "CreateFile",
+                                  "connectionName": "shared_onedrive"
+                                }
+                              },
+                              "runAfter": {
+                                "Create_CSV_table_-_Create_Project_Failed": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "runtimeConfiguration": {
+                                "contentTransfer": {
+                                  "transferMode": "Chunked"
+                                }
+                              }
+                            }
+                          },
+                          "else": {
+                            "actions": {
+                              "Log_Text_-_17": {
+                                "type": "AppendToArrayVariable",
+                                "inputs": {
+                                  "name": "LogText",
+                                  "value": {
+                                    "@variables('LogTextColNames')?[0]": "@utcNow()",
+                                    "@variables('LogTextColNames')?[1]": "Cloud Flow",
+                                    "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
+                                    "@variables('LogTextColNames')?[3]": "INFO",
+                                    "@variables('LogTextColNames')?[4]": "Primary Contact Not Found for EstimateNo - @{body('Parse_CurrentEstimateItem_JSON')?['number']}"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "runAfter": {
+                            "Get_Primary_Contact": [
+                              "Succeeded"
+                            ]
+                          },
+                          "metadata": {
+                            "operationMetadataId": "736e9914-3725-44b9-a177-041212d7f48f"
+                          }
+                        },
+                        "Get_Primary_Contact": {
+                          "type": "Query",
+                          "inputs": {
+                            "from": "@body('Parse_Customer_Contact_JSON')?['contacts']",
+                            "where": "@equals(item()?['is_primary'],true)"
+                          },
+                          "runAfter": {
+                            "Parse_Customer_Contact_JSON": [
+                              "Succeeded"
+                            ]
+                          },
+                          "metadata": {
+                            "operationMetadataId": "261c94b7-3d88-4e73-9676-68079f387713"
+                          }
+                        },
+                        "Log_Text_-_13": {
+                          "type": "AppendToArrayVariable",
+                          "inputs": {
+                            "name": "LogText",
+                            "value": {
+                              "@variables('LogTextColNames')?[0]": "@utcNow()",
+                              "@variables('LogTextColNames')?[1]": "Cloud Flow",
+                              "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
+                              "@variables('LogTextColNames')?[3]": "INFO",
+                              "@variables('LogTextColNames')?[4]": "Contact Details Fetched Successfully for EstimateNo - @{body('Parse_CurrentEstimateItem_JSON')?['number']}"
+                            }
+                          }
+                        }
+                      },
+                      "else": {
+                        "actions": {
+                          "Log_Text_-_14": {
+                            "type": "AppendToArrayVariable",
+                            "inputs": {
+                              "name": "LogText",
+                              "value": {
+                                "@variables('LogTextColNames')?[0]": "@utcNow()",
+                                "@variables('LogTextColNames')?[1]": "Cloud Flow",
+                                "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
+                                "@variables('LogTextColNames')?[3]": "INFO",
+                                "@variables('LogTextColNames')?[4]": "Get contact details Request Failed For EstimateNo - @{body('Parse_CurrentEstimateItem_JSON')?['number']}"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "runAfter": {
+                        "Get_Customer_Contact_Detail": [
+                          "Succeeded"
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "6b93e722-eb87-4f85-b359-8cb2ecbf20cc"
+                      }
+                    },
+                    "Get_Failed_Action_Details_-_3": {
+                      "type": "Compose",
+                      "inputs": "@actions('Get_Customer_Contact_Detail')",
+                      "runAfter": {
+                        "Get_Customer_Contact_Detail": [
+                          "TimedOut",
+                          "Failed"
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "08f3e77a-b7d3-49bd-b1a4-1efdc91d19f2"
+                      }
+                    },
+                    "Send_Email_-_Support_-_Get_Contact_Details_Failed": {
+                      "type": "Http",
+                      "inputs": {
+                        "uri": "@body('Get_Config_Details')?['EmailTriggerURL']",
+                        "method": "POST",
+                        "body": {
+                          "emailtype": "support",
+                          "flowtype": "cloud flow",
+                          "supportEmailContent": {
+                            "flowName": "@{workflow()?['tags']?['flowDisplayName']}",
+                            "failedAction": "@{body('Get_Failed_Action_Details_-_3')?[0]?['name']}",
+                            "failureMessage": "@{body('Get_Customer_Contact_Detail')}",
+                            "flowRunURL": "@{concat('https://make.powerautomate.com/manage/environments/', workflow()?['tags']?['environmentName'], '/flows/', workflow()?['name'], '/runs/', workflow()?['run']['name'])}",
+                            "LogFilePath": "@{variables('LogFilePath')}"
+                          },
+                          "clientEmailContent": {}
+                        }
+                      },
+                      "runAfter": {
+                        "Create_file_LogText_on_OneDrive-Get_Contact_Details_failed": [
+                          "Succeeded"
+                        ]
+                      },
+                      "runtimeConfiguration": {
+                        "contentTransfer": {
+                          "transferMode": "Chunked"
+                        }
+                      }
+                    },
+                    "Log_Text_-_12": {
+                      "type": "AppendToArrayVariable",
+                      "inputs": {
+                        "name": "LogText",
+                        "value": {
+                          "@variables('LogTextColNames')?[0]": "@utcNow()",
+                          "@variables('LogTextColNames')?[1]": "Cloud Flow",
+                          "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
+                          "@variables('LogTextColNames')?[3]": "INFO",
+                          "@variables('LogTextColNames')?[4]": "Getting contact details for the EstimateNo - @{body('Parse_CurrentEstimateItem_JSON')?['number']}"
+                        }
+                      },
+                      "runAfter": {
+                        "Parse_CurrentEstimateItem_JSON": [
+                          "Succeeded"
+                        ]
+                      }
+                    },
+                    "Log_Text_-_15": {
+                      "type": "AppendToArrayVariable",
+                      "inputs": {
+                        "name": "LogText",
+                        "value": {
+                          "@variables('LogTextColNames')?[0]": "@utcNow()",
+                          "@variables('LogTextColNames')?[1]": "Cloud Flow",
+                          "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
+                          "@variables('LogTextColNames')?[3]": "Error",
+                          "@variables('LogTextColNames')?[4]": "Error In Get Contact Details for EstimateNo - @{body('Parse_CurrentEstimateItem_JSON')?['number']}, Error - @{outputs('Get_Failed_Action_Details_-_3')}"
+                        }
+                      },
+                      "runAfter": {
+                        "Get_Failed_Action_Details_-_3": [
+                          "Succeeded"
+                        ]
+                      }
+                    },
+                    "Create_CSV_table-Get_Contact_Details_Failed": {
+                      "type": "Table",
+                      "inputs": {
+                        "from": "@variables('LogText')",
+                        "format": "CSV"
+                      },
+                      "runAfter": {
+                        "Log_Text_-_15": [
+                          "Succeeded"
+                        ]
+                      }
+                    },
+                    "Create_file_LogText_on_OneDrive-Get_Contact_Details_failed": {
+                      "type": "OpenApiConnection",
+                      "inputs": {
+                        "parameters": {
+                          "folderPath": "/Logs/SumoQuote Project",
+                          "name": "@substring(variables('LogFilePath'), add(lastIndexOf(variables('LogFilePath'), '/'),1))",
+                          "body": "@body('Create_CSV_table-Get_Contact_Details_Failed')"
+                        },
+                        "host": {
+                          "apiId": "/providers/Microsoft.PowerApps/apis/shared_onedrive",
+                          "operationId": "CreateFile",
+                          "connectionName": "shared_onedrive"
+                        }
+                      },
+                      "runAfter": {
+                        "Create_CSV_table-Get_Contact_Details_Failed": [
+                          "Succeeded"
+                        ]
+                      },
+                      "runtimeConfiguration": {
+                        "contentTransfer": {
+                          "transferMode": "Chunked"
+                        }
+                      }
+                    }
+                  },
+                  "runAfter": {
+                    "Filter_Array_and_Remove_Previous_Fetched_Estimates_from_current_Estimate_List": [
+                      "Succeeded"
+                    ]
+                  },
+                  "metadata": {
+                    "operationMetadataId": "fbbb221d-4ca3-4cf2-9180-d134fb71f712"
+                  }
+                },
+                "List_rows_present_in__PreviousFetchedEstimates": {
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "parameters": {
+                      "file": "E550BD3B3E47E33!292",
+                      "table": "{CDA5F46C-50CE-471B-9A9E-A3DBC3ADE955}"
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_excelonline",
+                      "operationId": "GetItems",
+                      "connectionName": "shared_excelonline"
+                    }
+                  },
+                  "runAfter": {
+                    "Log_Text_-_10": [
+                      "Succeeded"
+                    ]
+                  },
+                  "metadata": {
+                    "E550BD3B3E47E33!292": "/Estimates/LastFetchedEstimates.xlsx",
+                    "E550BD3B3E47E33!109": "/Estimates/FetchedEstimateDetails.xlsx",
+                    "operationMetadataId": "be0e458d-c513-4048-ad34-e43e00a1b795"
+                  }
+                },
+                "For_Each_Estimate_In_previous_fetched_Estimates": {
+                  "type": "Foreach",
+                  "foreach": "@outputs('List_rows_present_in__PreviousFetchedEstimates')?['body/value']",
+                  "actions": {
+                    "Append_to_PreviousFetchedEstNum": {
+                      "type": "AppendToArrayVariable",
+                      "inputs": {
+                        "name": "PreviousFetchedEstNum",
+                        "value": "@item()?['EstimateNo']"
+                      },
+                      "metadata": {
+                        "operationMetadataId": "0232d969-0dd7-450e-b734-ce71f258f380"
+                      }
+                    }
+                  },
+                  "runAfter": {
+                    "Log_Text_-_11": [
+                      "Succeeded"
+                    ]
+                  },
+                  "metadata": {
+                    "operationMetadataId": "1f71a368-9c9d-41cd-924a-f62ee6edea3b"
+                  }
+                },
+                "Filter_Array_and_Remove_Previous_Fetched_Estimates_from_current_Estimate_List": {
+                  "type": "Query",
+                  "inputs": {
+                    "from": "@variables('EstimatesList')",
+                    "where": "@not(contains(variables('PreviousFetchedEstNum'),item()?['number']))"
+                  },
+                  "runAfter": {
+                    "For_Each_Estimate_In_previous_fetched_Estimates": [
+                      "Succeeded"
+                    ]
+                  },
+                  "metadata": {
+                    "operationMetadataId": "11d68fc8-741d-43c8-9f13-e9f9dd75a3f9"
+                  }
+                },
+                "Get_Failed_Action_Details_-_5": {
+                  "type": "Query",
+                  "inputs": {
+                    "from": "@result('For_Each_Estimate_in_Estimates_List')",
+                    "where": "@equals(equals(item()?['status'], 'Failed'),true)"
+                  },
+                  "runAfter": {
+                    "For_Each_Estimate_in_Estimates_List": [
+                      "TimedOut",
+                      "Failed"
+                    ]
+                  }
+                },
+                "Send_Email_-_Support_-_Action_Inside_Loop_Failed": {
+                  "type": "Http",
+                  "inputs": {
+                    "uri": "@body('Get_Config_Details')?['EmailTriggerURL']",
+                    "method": "POST",
+                    "body": {
+                      "emailtype": "support",
+                      "flowtype": "cloud flow",
+                      "supportEmailContent": {
+                        "flowName": "@{workflow()?['tags']?['flowDisplayName']}",
+                        "failedAction": "@{body('Get_Failed_Action_Details_-_5')?[0]?['name']}",
+                        "failureMessage": "@{body('Get_Failed_Action_Details_-_5')?[0]?['error']?['message']}",
+                        "flowRunURL": "@{concat('https://make.powerautomate.com/manage/environments/', workflow()?['tags']?['environmentName'], '/flows/', workflow()?['name'], '/runs/', workflow()?['run']['name'])}",
+                        "LogFilePath": "@{variables('LogFilePath')}"
+                      },
+                      "clientEmailContent": {}
+                    }
+                  },
+                  "runAfter": {
+                    "Create_file_LogText_on_OneDrive-Action_Inside_Loop_Failed": [
+                      "Succeeded"
+                    ]
+                  },
+                  "runtimeConfiguration": {
+                    "contentTransfer": {
+                      "transferMode": "Chunked"
+                    }
+                  }
+                },
+                "Log_Text_-_10": {
+                  "type": "AppendToArrayVariable",
+                  "inputs": {
+                    "name": "LogText",
+                    "value": {
+                      "@variables('LogTextColNames')?[0]": "@utcNow()",
+                      "@variables('LogTextColNames')?[1]": "Cloud Flow",
+                      "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
+                      "@variables('LogTextColNames')?[3]": "INFO",
+                      "@variables('LogTextColNames')?[4]": "Reading Previous Fetched Estimates"
+                    }
+                  }
+                },
+                "Log_Text_-_11": {
+                  "type": "AppendToArrayVariable",
+                  "inputs": {
+                    "name": "LogText",
+                    "value": {
+                      "@variables('LogTextColNames')?[0]": "@utcNow()",
+                      "@variables('LogTextColNames')?[1]": "Cloud Flow",
+                      "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
+                      "@variables('LogTextColNames')?[3]": "INFO",
+                      "@variables('LogTextColNames')?[4]": "Reading Previous Fetched Estimates - Succeeded"
+                    }
+                  },
+                  "runAfter": {
+                    "List_rows_present_in__PreviousFetchedEstimates": [
+                      "Succeeded"
+                    ]
+                  }
+                },
+                "Log_Text_-_22": {
+                  "type": "AppendToArrayVariable",
+                  "inputs": {
+                    "name": "LogText",
+                    "value": {
+                      "@variables('LogTextColNames')?[0]": "@utcNow()",
+                      "@variables('LogTextColNames')?[1]": "Cloud Flow",
+                      "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
+                      "@variables('LogTextColNames')?[3]": "Error",
+                      "@variables('LogTextColNames')?[4]": "EstimateNo - @{body('Parse_CurrentEstimateItem_JSON')?['number']}, Error - @{body('Get_Failed_Action_Details_-_5')}"
+                    }
+                  },
+                  "runAfter": {
+                    "Get_Failed_Action_Details_-_5": [
+                      "Succeeded"
+                    ]
+                  }
+                },
+                "Create_CSV_table-_Action_Inside_Loop_Failed": {
+                  "type": "Table",
+                  "inputs": {
+                    "from": "@variables('LogText')",
+                    "format": "CSV"
+                  },
+                  "runAfter": {
+                    "Log_Text_-_22": [
+                      "Succeeded"
+                    ]
+                  }
+                },
+                "Create_file_LogText_on_OneDrive-Action_Inside_Loop_Failed": {
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "parameters": {
+                      "folderPath": "/Logs/SumoQuote Project",
+                      "name": "@substring(variables('LogFilePath'), add(lastIndexOf(variables('LogFilePath'), '/'),1))",
+                      "body": "@body('Create_CSV_table-_Action_Inside_Loop_Failed')"
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_onedrive",
+                      "operationId": "CreateFile",
+                      "connectionName": "shared_onedrive"
+                    }
+                  },
+                  "runAfter": {
+                    "Create_CSV_table-_Action_Inside_Loop_Failed": [
+                      "Succeeded"
+                    ]
+                  },
+                  "runtimeConfiguration": {
+                    "contentTransfer": {
+                      "transferMode": "Chunked"
+                    }
+                  }
+                }
+              },
+              "runAfter": {
+                "Check_Debug_Mode": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "c633dce6-595c-4825-b6e3-990b6bf9d669"
+              }
+            },
+            "Get_Failed_Action_Details_-_1": {
+              "type": "Query",
+              "inputs": {
+                "from": "@result('Get_Access_Token')",
+                "where": "@equals(equals(item()?['status'], 'Failed'),true)"
+              },
+              "runAfter": {
+                "Get_Access_Token": [
+                  "TimedOut",
+                  "Failed"
+                ]
+              }
+            },
+            "Send_Email_-_Support_-_Action_Token_Failures": {
+              "type": "Http",
+              "inputs": {
+                "uri": "@body('Get_Config_Details')?['EmailTriggerURL']",
+                "method": "POST",
+                "body": {
+                  "emailtype": "support",
+                  "flowtype": "cloud flow",
+                  "supportEmailContent": {
+                    "flowName": "@{workflow()?['tags']?['flowDisplayName']}",
+                    "failedAction": "@{body('Get_Failed_Action_Details_-_1')?[0]?['name']}",
+                    "failureMessage": "@{body('Get_Failed_Action_Details_-_1')?[0]?['error']?['message']}",
+                    "flowRunURL": "@{concat('https://make.powerautomate.com/manage/environments/', workflow()?['tags']?['environmentName'], '/flows/', workflow()?['name'], '/runs/', workflow()?['run']['name'])}",
+                    "LogFilePath": "@{variables('LogFilePath')}"
+                  },
+                  "clientEmailContent": {}
+                }
+              },
+              "runAfter": {
+                "Create_file_LogText_on_OneDrive-Access_token_request_failure": [
+                  "Succeeded"
+                ]
+              },
+              "runtimeConfiguration": {
+                "contentTransfer": {
+                  "transferMode": "Chunked"
+                }
+              }
+            },
+            "Get_Failed_Action_Details_-_2": {
+              "type": "Query",
+              "inputs": {
+                "from": "@result('Parse_and_Store_Estimates')",
+                "where": "@equals(equals(item()?['status'], 'Failed'),true)"
+              },
+              "runAfter": {
+                "Parse_and_Store_Estimates": [
+                  "TimedOut",
+                  "Failed"
+                ]
+              }
+            },
+            "Send_Email_-_Support_-_Fetch_And_Parse_failed": {
+              "type": "Http",
+              "inputs": {
+                "uri": "@body('Get_Config_Details')?['EmailTriggerURL']",
+                "method": "POST",
+                "body": {
+                  "emailtype": "support",
+                  "flowtype": "cloud flow",
+                  "supportEmailContent": {
+                    "flowName": "@{workflow()?['tags']?['flowDisplayName']}",
+                    "failedAction": "@{body('Get_Failed_Action_Details_-_2')?[0]?['name']}",
+                    "failureMessage": "@{body('Get_Failed_Action_Details_-_2')?[0]?['error']?['message']}",
+                    "flowRunURL": "@{concat('https://make.powerautomate.com/manage/environments/', workflow()?['tags']?['environmentName'], '/flows/', workflow()?['name'], '/runs/', workflow()?['run']['name'])}",
+                    "LogFilePath": "@{variables('LogFilePath')}"
+                  },
+                  "clientEmailContent": {}
+                }
+              },
+              "runAfter": {
+                "Create_file_LogText_on_OneDrive-Fetch_and_Parse_Failed": [
+                  "Succeeded"
+                ]
+              },
+              "runtimeConfiguration": {
+                "contentTransfer": {
+                  "transferMode": "Chunked"
+                }
+              }
+            },
+            "Check_Debug_Mode": {
+              "type": "Scope",
+              "actions": {
+                "If_Debug_Mode_Is_Active": {
+                  "type": "If",
+                  "expression": {
+                    "and": [
+                      {
+                        "equals": [
+                          "@int(body('Get_Config_Details')?['DebugMode'])",
+                          1
+                        ]
+                      }
+                    ]
+                  },
+                  "actions": {
+                    "Filter_array_Based_On_Customer_Name": {
+                      "type": "Query",
+                      "inputs": {
+                        "from": "@variables('EstimatesList')",
+                        "where": "@equals(and(equals(trim(toLower(item()?['contact_first_name'])), trim(toLower(body('Get_Config_Details')?['FirstName']))), equals(trim(toLower(item()?['contact_last_name'])), trim(toLower(body('Get_Config_Details')?['LastName'])))),false)"
+                      },
+                      "runAfter": {
+                        "Log_Text_-_8": [
+                          "Succeeded"
+                        ]
+                      }
+                    },
+                    "For_Each_Estimate_Other_Than_Test_Customer": {
+                      "type": "Foreach",
+                      "foreach": "@body('Filter_array_Based_On_Customer_Name')",
+                      "actions": {
+                        "Append_to_array_variable_PreviousFetchedEstNum": {
+                          "type": "AppendToArrayVariable",
+                          "inputs": {
+                            "name": "PreviousFetchedEstNum",
+                            "value": "@items('For_Each_Estimate_Other_Than_Test_Customer')?['number']"
+                          }
+                        }
+                      },
+                      "runAfter": {
+                        "Filter_array_Based_On_Customer_Name": [
+                          "Succeeded"
+                        ]
+                      }
+                    },
+                    "Log_Text_-_8": {
+                      "type": "AppendToArrayVariable",
+                      "inputs": {
+                        "name": "LogText",
+                        "value": {
+                          "@variables('LogTextColNames')?[0]": "@utcNow()",
+                          "@variables('LogTextColNames')?[1]": "Cloud Flow",
+                          "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
+                          "@variables('LogTextColNames')?[3]": "INFO",
+                          "@variables('LogTextColNames')?[4]": "Debug Mode condition - True"
+                        }
+                      }
+                    }
+                  },
+                  "else": {
+                    "actions": {
+                      "Log_Text_-_9": {
+                        "type": "AppendToArrayVariable",
+                        "inputs": {
+                          "name": "LogText",
+                          "value": {
+                            "@variables('LogTextColNames')?[0]": "@utcNow()",
+                            "@variables('LogTextColNames')?[1]": "Cloud Flow",
+                            "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
+                            "@variables('LogTextColNames')?[3]": "INFO",
+                            "@variables('LogTextColNames')?[4]": "Debug Mode condition - False"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "runAfter": {
+                "Log_Text_-_7": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Log_Text_-_6": {
+              "type": "AppendToArrayVariable",
+              "inputs": {
+                "name": "LogText",
+                "value": {
+                  "@variables('LogTextColNames')?[0]": "@utcNow()",
+                  "@variables('LogTextColNames')?[1]": "Cloud Flow",
+                  "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
+                  "@variables('LogTextColNames')?[3]": "INFO",
+                  "@variables('LogTextColNames')?[4]": "Making API calls to get Estimate List"
+                }
+              },
+              "runAfter": {
+                "Get_Access_Token": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Log_Text_-_7": {
+              "type": "AppendToArrayVariable",
+              "inputs": {
+                "name": "LogText",
+                "value": {
+                  "@variables('LogTextColNames')?[0]": "@utcNow()",
+                  "@variables('LogTextColNames')?[1]": "Cloud Flow",
+                  "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
+                  "@variables('LogTextColNames')?[3]": "INFO",
+                  "@variables('LogTextColNames')?[4]": "Estimates Fetch completed"
+                }
+              },
+              "runAfter": {
+                "Fetch_Estimates_until_All_pages_Fetched": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Log_Text_-_Access_Token_Fetch_Failed": {
+              "type": "AppendToArrayVariable",
+              "inputs": {
+                "name": "LogText",
+                "value": {
+                  "@variables('LogTextColNames')?[0]": "@utcNow()",
+                  "@variables('LogTextColNames')?[1]": "Cloud Flow",
+                  "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
+                  "@variables('LogTextColNames')?[3]": "Error",
+                  "@variables('LogTextColNames')?[4]": "@{body('Get_Failed_Action_Details_-_1')}"
+                }
+              },
+              "runAfter": {
+                "Get_Failed_Action_Details_-_1": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Create_CSV_table-access_token_fetched_failed": {
+              "type": "Table",
+              "inputs": {
+                "from": "@variables('LogText')",
+                "format": "CSV"
+              },
+              "runAfter": {
+                "Log_Text_-_Access_Token_Fetch_Failed": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Create_file_LogText_on_OneDrive-Access_token_request_failure": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "folderPath": "/Logs/SumoQuote Project",
+                  "name": "@substring(variables('LogFilePath'), add(lastIndexOf(variables('LogFilePath'), '/'),1))",
+                  "body": "@body('Create_CSV_table-access_token_fetched_failed')"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_onedrive",
+                  "operationId": "CreateFile",
+                  "connectionName": "shared_onedrive"
+                }
+              },
+              "runAfter": {
+                "Create_CSV_table-access_token_fetched_failed": [
+                  "Succeeded"
+                ]
+              },
+              "runtimeConfiguration": {
+                "contentTransfer": {
+                  "transferMode": "Chunked"
+                }
+              }
+            },
+            "Log_Text_-_23": {
+              "type": "AppendToArrayVariable",
+              "inputs": {
+                "name": "LogText",
+                "value": {
+                  "@variables('LogTextColNames')?[0]": "@utcNow()",
+                  "@variables('LogTextColNames')?[1]": "Cloud Flow",
+                  "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
+                  "@variables('LogTextColNames')?[3]": "Error",
+                  "@variables('LogTextColNames')?[4]": "Error - @{body('Get_Failed_Action_Details_-_2')}"
+                }
+              },
+              "runAfter": {
+                "Get_Failed_Action_Details_-_2": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Create_CSV_table-Fetch_and_Parse_Failed": {
+              "type": "Table",
+              "inputs": {
+                "from": "@variables('LogText')",
+                "format": "CSV"
+              },
+              "runAfter": {
+                "Log_Text_-_23": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Create_file_LogText_on_OneDrive-Fetch_and_Parse_Failed": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "folderPath": "/Logs/SumoQuote Project",
+                  "name": "@substring(variables('LogFilePath'), add(lastIndexOf(variables('LogFilePath'), '/'),1))",
+                  "body": "@body('Create_CSV_table-Fetch_and_Parse_Failed')"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_onedrive",
+                  "operationId": "CreateFile",
+                  "connectionName": "shared_onedrive"
+                }
+              },
+              "runAfter": {
+                "Create_CSV_table-Fetch_and_Parse_Failed": [
+                  "Succeeded"
+                ]
+              },
+              "runtimeConfiguration": {
+                "contentTransfer": {
+                  "transferMode": "Chunked"
+                }
+              }
+            }
+          },
+          "runAfter": {
+            "Initialize_variable_PreviousFetchedEstNum": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "a4420bdf-f04a-4493-8212-3b9552997aad"
+          }
+        },
+        "Initialize_Variable_Status_Code": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "statusCode",
+                "type": "integer"
+              }
+            ]
+          },
+          "runAfter": {
+            "Log_Started": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "91695257-f2b0-4fb4-a1ff-feb5e21fdcb9"
+          }
+        },
+        "Initialize_Variable_AccessToken": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "AccessToken",
+                "type": "string"
+              }
+            ]
+          },
+          "runAfter": {
+            "Initialize_Variable_Status_Code": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "035b4ced-5a0a-4f18-8657-e7b0dfaf20d8"
+          }
+        },
+        "Initialize_variable_PageCount": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "PageCount",
+                "type": "integer",
+                "value": 1
+              }
+            ]
+          },
+          "runAfter": {
+            "Initialize_Variable_AccessToken": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "4fc3b504-f3d9-44ac-a23a-fa191471d7ca"
+          }
+        },
+        "Initialize_Varibale_EstimatesList": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "EstimatesList",
+                "type": "array"
+              }
+            ]
+          },
+          "runAfter": {
+            "Initialize_variable_CurrentPage": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "1256e819-c38a-4fb8-b78a-dbc7f712a2d9"
+          }
+        },
+        "Initialize_variable_CurrentPage": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "CurrentPage",
+                "type": "integer",
+                "value": 1
+              }
+            ]
+          },
+          "runAfter": {
+            "Initialize_variable_PageCount": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "b6fcf0ce-8338-461e-b47e-4f6033ff8e46"
+          }
+        },
+        "Email_Variable": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "Email",
+                "type": "string"
+              }
+            ]
+          },
+          "runAfter": {
+            "Initialize_Varibale_EstimatesList": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "1c1b986c-4e85-47e4-8e91-e77a18457873"
+          }
+        },
+        "Phone_Variable": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "Phone",
+                "type": "string"
+              }
+            ]
+          },
+          "runAfter": {
+            "Email_Variable": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "a732dc5c-d942-4769-b4bc-8a80cdb4295c"
+          }
+        },
+        "Initialize_variable_CheckContractorTag": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "CheckContractorTag",
+                "type": "boolean",
+                "value": false
+              }
+            ]
+          },
+          "runAfter": {
+            "Phone_Variable": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "a2bcfa3b-d51f-4c19-9e1d-5633fc0e946a"
+          }
+        },
+        "Initialize_variable_PreviousFetchedEstNum": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "PreviousFetchedEstNum",
+                "type": "array"
+              }
+            ]
+          },
+          "runAfter": {
+            "Initialize_variable_FailedEstimateNoList": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "3735eaa8-bd62-4cf1-a906-29ec48eb207f"
+          }
+        },
+        "Initialize_variable_FailedEstimateNoList": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "FailedEstimateNoList",
+                "type": "array"
+              }
+            ]
+          },
+          "runAfter": {
+            "Initialize_variable_CheckContractorTag": [
+              "Succeeded"
+            ]
+          }
+        },
+        "Update_LastFetched_Estimates": {
+          "type": "Scope",
+          "actions": {
+            "Apply_to_each_Estimate_in_LastFetchedEstimates": {
+              "type": "Foreach",
+              "foreach": "@outputs('List_rows_present_in__PreviousFetchedEstimates')?['body/value']",
+              "actions": {
+                "Delete_a_row": {
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "parameters": {
+                      "file": "E550BD3B3E47E33!292",
+                      "table": "{CDA5F46C-50CE-471B-9A9E-A3DBC3ADE955}",
+                      "idColumn": "EstimateNo",
+                      "id": "@item()?['EstimateNo']"
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_excelonline",
+                      "operationId": "DeleteItem",
+                      "connectionName": "shared_excelonline"
+                    }
+                  },
+                  "metadata": {
+                    "E550BD3B3E47E33!292": "/Estimates/LastFetchedEstimates.xlsx",
+                    "operationMetadataId": "504aa75a-b4ca-4bc7-9fac-a094491e9f7d"
+                  }
+                }
+              },
+              "runAfter": {
+                "Log_Text_-_25": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "e281bfdd-5fb2-4102-aca7-9c62cf6dd2e2"
+              }
+            },
+            "Filter_array_CurrentEstimateList_And_Exclude_Failed_One": {
+              "type": "Query",
+              "inputs": {
+                "from": "@variables('EstimatesList')",
+                "where": "@not(contains(variables('FailedEstimateNoList'),item()?['number']))"
+              },
+              "runAfter": {
+                "Apply_to_each_Estimate_in_LastFetchedEstimates": [
+                  "Succeeded",
+                  "Failed"
+                ]
+              }
+            },
+            "Apply_to_each_Estimate_in_Currently_Fetched_Estimates_List": {
+              "type": "Foreach",
+              "foreach": "@body('Filter_array_CurrentEstimateList_And_Exclude_Failed_One')",
+              "actions": {
+                "Add_Estimate_to_PreviousFetched_Estimates": {
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "parameters": {
+                      "file": "E550BD3B3E47E33!292",
+                      "table": "{CDA5F46C-50CE-471B-9A9E-A3DBC3ADE955}",
+                      "item/EstimateNo": "@{items('Apply_to_each_Estimate_in_Currently_Fetched_Estimates_List')?['number']}",
+                      "item/DateTime (UTC)": "@{utcNow()}"
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_excelonline",
+                      "operationId": "AddRowV2",
+                      "connectionName": "shared_excelonline"
+                    }
+                  },
+                  "metadata": {
+                    "E550BD3B3E47E33!292": "/Estimates/LastFetchedEstimates.xlsx",
+                    "operationMetadataId": "e7cce557-d0e4-4cb2-8455-185d31769f73"
+                  }
+                }
+              },
+              "runAfter": {
+                "Filter_array_CurrentEstimateList_And_Exclude_Failed_One": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "10ca7b97-2cbf-4a75-9d4a-58ca903f6fb6"
+              }
+            },
+            "If_EstimateList_is_Not_Empty": {
+              "type": "If",
+              "expression": {
+                "and": [
+                  {
+                    "greater": [
+                      "@length(variables('EstimatesList'))",
+                      0
+                    ]
+                  }
+                ]
+              },
+              "actions": {
+                "Update_NextRetriveDate_for_Estimates": {
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "parameters": {
+                      "file": "E550BD3B3E47E33!118",
+                      "table": "{510501A4-37B7-4231-B3A5-C718A87FBC97}",
+                      "idColumn": "ID",
+                      "id": "919293",
+                      "item/NextRetriveDateTime": "@{last(variables('EstimatesList'))?['created_at']}"
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_excelonline",
+                      "operationId": "PatchItem",
+                      "connectionName": "shared_excelonline"
+                    }
+                  },
+                  "metadata": {
+                    "E550BD3B3E47E33!118": "/Config/EstimateLastFetchedDateTimeInfo.xlsx",
+                    "operationMetadataId": "07ce9dde-73fd-4216-bd23-e6570564c0c6"
+                  }
+                }
+              },
+              "else": {
+                "actions": {}
+              },
+              "runAfter": {
+                "Apply_to_each_Estimate_in_Currently_Fetched_Estimates_List": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Log_Text_-_25": {
+              "type": "AppendToArrayVariable",
+              "inputs": {
+                "name": "LogText",
+                "value": {
+                  "@variables('LogTextColNames')?[0]": "@utcNow()",
+                  "@variables('LogTextColNames')?[1]": "Cloud Flow",
+                  "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
+                  "@variables('LogTextColNames')?[3]": "INFO",
+                  "@variables('LogTextColNames')?[4]": "Updating LastFetched Estimates to PreviousFetched Excel"
+                }
+              }
+            },
+            "Log_Text_-_26": {
+              "type": "AppendToArrayVariable",
+              "inputs": {
+                "name": "LogText",
+                "value": {
+                  "@variables('LogTextColNames')?[0]": "@utcNow()",
+                  "@variables('LogTextColNames')?[1]": "Cloud Flow",
+                  "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
+                  "@variables('LogTextColNames')?[3]": "INFO",
+                  "@variables('LogTextColNames')?[4]": "Updated LastFetched Estimates to PreviousFetched Excel - Completed"
+                }
+              },
+              "runAfter": {
+                "If_EstimateList_is_Not_Empty": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Create_CSV_table-Flow_Run_Completed": {
+              "type": "Table",
+              "inputs": {
+                "from": "@variables('LogText')",
+                "format": "CSV"
+              },
+              "runAfter": {
+                "Log_Text_-_26": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Create_file_LogText_on_OneDrive-Flow_Run_Completed": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "folderPath": "/Logs/SumoQuote Project",
+                  "name": "@substring(variables('LogFilePath'), add(lastIndexOf(variables('LogFilePath'), '/'),1))",
+                  "body": "@body('Create_CSV_table-Flow_Run_Completed')"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_onedrive",
+                  "operationId": "CreateFile",
+                  "connectionName": "shared_onedrive"
+                }
+              },
+              "runAfter": {
+                "Create_CSV_table-Flow_Run_Completed": [
+                  "Succeeded"
+                ]
+              },
+              "runtimeConfiguration": {
+                "contentTransfer": {
+                  "transferMode": "Chunked"
+                }
+              }
+            }
+          },
+          "runAfter": {
+            "Fetch_Latest_Estimate_List": [
+              "Succeeded"
+            ]
+          }
+        },
+        "Get_Failed_Action_Details_-_6": {
+          "type": "Query",
+          "inputs": {
+            "from": "@result('Update_LastFetched_Estimates')",
+            "where": "@equals(equals(item()?['status'], 'Failed'),true)"
+          },
+          "runAfter": {
+            "Update_LastFetched_Estimates": [
+              "Failed",
+              "TimedOut"
+            ]
+          }
+        },
+        "Send_Email_-_Support_-_Failed_To_Update_LastFetched": {
+          "type": "Http",
+          "inputs": {
+            "uri": "@body('Get_Config_Details')?['EmailTriggerURL']",
+            "method": "POST",
+            "body": {
+              "emailtype": "support",
+              "flowtype": "cloud flow",
+              "supportEmailContent": {
+                "flowName": "@{workflow()?['tags']?['flowDisplayName']}",
+                "failedAction": "@{body('Get_Failed_Action_Details_-_6')?[0]?['name']}",
+                "failureMessage": "@{body('Get_Failed_Action_Details_-_6')?[0]?['error']?['message']}",
+                "flowRunURL": "@{concat('https://make.powerautomate.com/manage/environments/', workflow()?['tags']?['environmentName'], '/flows/', workflow()?['name'], '/runs/', workflow()?['run']['name'])}",
+                "LogFilePath": "@{variables('LogFilePath')}"
+              },
+              "clientEmailContent": {}
+            }
+          },
+          "runAfter": {
+            "Create_file_LogText_on_OneDrive-Failed_to_update_LastFetched": [
+              "Succeeded"
+            ]
+          },
+          "runtimeConfiguration": {
+            "contentTransfer": {
+              "transferMode": "Chunked"
+            }
+          }
+        },
+        "Initialize_variable_LogFilePath": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "LogFilePath",
+                "type": "string",
+                "value": "@concat('/Logs/SumoQuote Project/', formatDateTime(utcNow(), 'yyyy_MM_dd_T_HH_mm_ss'), '_LogText.csv')"
+              }
+            ]
+          },
+          "runAfter": {}
+        },
+        "Initialize_variable_LogTextColNames": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "LogTextColNames",
+                "type": "array",
+                "value": [
+                  "DateTime",
+                  "FlowType",
+                  "FlowName",
+                  "Level",
+                  "Message"
+                ]
+              }
+            ]
+          },
+          "runAfter": {
+            "Initialize_variable_LogFilePath": [
+              "Succeeded"
+            ]
+          }
+        },
+        "Initialize_variable_LogText": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "LogText",
+                "type": "array"
+              }
+            ]
+          },
+          "runAfter": {
+            "Initialize_variable_LogTextColNames": [
+              "Succeeded"
+            ]
+          }
+        },
+        "Log_Started": {
+          "type": "AppendToArrayVariable",
+          "inputs": {
+            "name": "LogText",
+            "value": {
+              "@variables('LogTextColNames')?[0]": "@utcNow()",
+              "@variables('LogTextColNames')?[1]": "Cloud Flow",
+              "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
+              "@variables('LogTextColNames')?[3]": "INFO",
+              "@variables('LogTextColNames')?[4]": "FetchLatestEstimates flow started"
+            }
+          },
+          "runAfter": {
+            "Initialize_variable_LogText": [
+              "Succeeded"
+            ]
+          }
+        },
+        "Log_Text_-_24": {
+          "type": "AppendToArrayVariable",
+          "inputs": {
+            "name": "LogText",
+            "value": {
+              "@variables('LogTextColNames')?[0]": "@utcNow()",
+              "@variables('LogTextColNames')?[1]": "Cloud Flow",
+              "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
+              "@variables('LogTextColNames')?[3]": "Error",
+              "@variables('LogTextColNames')?[4]": "Failed to update LastFetched Estimate, Error - @{body('Get_Failed_Action_Details_-_6')}"
+            }
+          },
+          "runAfter": {
+            "Get_Failed_Action_Details_-_6": [
+              "Succeeded"
+            ]
+          }
+        },
+        "Create_CSV_table-Failed_to_update_LastFetched": {
+          "type": "Table",
+          "inputs": {
+            "from": "@variables('LogText')",
+            "format": "CSV"
+          },
+          "runAfter": {
+            "Log_Text_-_24": [
+              "Succeeded"
+            ]
+          }
+        },
+        "Create_file_LogText_on_OneDrive-Failed_to_update_LastFetched": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "folderPath": "/Logs/SumoQuote Project",
+              "name": "@substring(variables('LogFilePath'), add(lastIndexOf(variables('LogFilePath'), '/'),1))",
+              "body": "@body('Create_CSV_table-Failed_to_update_LastFetched')"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_onedrive",
+              "operationId": "CreateFile",
+              "connectionName": "shared_onedrive"
+            }
+          },
+          "runAfter": {
+            "Create_CSV_table-Failed_to_update_LastFetched": [
+              "Succeeded"
+            ]
+          },
+          "runtimeConfiguration": {
+            "contentTransfer": {
+              "transferMode": "Chunked"
+            }
+          }
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

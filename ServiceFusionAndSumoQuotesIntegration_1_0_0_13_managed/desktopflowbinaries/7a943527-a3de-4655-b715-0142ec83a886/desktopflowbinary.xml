@@ -1,0 +1,14 @@
+<desktopflowbinary desktopflowbinaryid="7a943527-a3de-4655-b715-0142ec83a886">
+  <data mimetype="image/png">ControlRepositoryImageSelectorFile_7a943527-a3de-4655-b715-0142ec83a886.png</data>
+  <iscustomizable>1</iscustomizable>
+  <metadata>{}</metadata>
+  <mimetype>image/png</mimetype>
+  <name>Desktop flow ui element image-based selector</name>
+  <process>
+    <workflowid>0f8f52ec-b09d-4893-bd44-27799e5cfab0</workflowid>
+  </process>
+  <reference>controlRepo-selector\925a9504-25ad-4d6f-8565-a102a4fef4d2.png</reference>
+  <statecode>0</statecode>
+  <statuscode>1</statuscode>
+  <type>ControlRepositoryImageSelectorFile</type>
+</desktopflowbinary>

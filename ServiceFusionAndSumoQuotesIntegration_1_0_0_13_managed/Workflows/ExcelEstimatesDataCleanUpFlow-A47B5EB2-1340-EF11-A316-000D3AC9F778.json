@@ -1,0 +1,188 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_excelonline": {
+        "api": {
+          "name": "shared_excelonline"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "cr570_ExcelOnlineServiceFusionSumoQuoteIntegration"
+        },
+        "runtimeSource": "embedded"
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        }
+      },
+      "triggers": {
+        "Run_Once_In_Every_10_Day": {
+          "type": "Recurrence",
+          "recurrence": {
+            "frequency": "Day",
+            "interval": 10,
+            "startTime": "2024-07-12T06:00:00Z"
+          },
+          "metadata": {
+            "operationMetadataId": "d3895668-aa7b-464f-bb28-731938146690"
+          }
+        }
+      },
+      "actions": {
+        "Excel_Data_Clean_Up": {
+          "type": "Scope",
+          "actions": {
+            "List_rows_present_in_Estimates_table": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "file": "E550BD3B3E47E33!109",
+                  "table": "{EFFBB888-A54E-422B-A988-4DCDAA21FA1B}"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_excelonline",
+                  "operationId": "GetItems",
+                  "connectionName": "shared_excelonline"
+                }
+              },
+              "runAfter": {
+                "Get_Config_Data": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "E550BD3B3E47E33!109": "/Estimates/FetchedEstimateDetails.xlsx",
+                "E550BD3B3E47E33!2036": "/FetchedEstimateDetails.xlsx"
+              }
+            },
+            "Filter_array_based_on_status_and_datetime": {
+              "type": "Query",
+              "inputs": {
+                "from": "@outputs('List_rows_present_in_Estimates_table')?['body/value']",
+                "where": "@equals(or(equals(item()?['Status'], 'COMPLETED'), lessOrEquals(parseDateTime(item()?['DateTime (UTC)']), addDays(utcNow(), int(body('Get_Config_Data')?['NoOfDaysToCheck'])))),true)"
+              },
+              "runAfter": {
+                "List_rows_present_in_Estimates_table": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Apply_to_each_Row_in_filter_result": {
+              "type": "Foreach",
+              "foreach": "@outputs('Filter_array_based_on_status_and_datetime')['body']",
+              "actions": {
+                "Add_a_row_into_archive": {
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "parameters": {
+                      "file": "E550BD3B3E47E33!120",
+                      "table": "{AFAA7D39-CC28-4C37-885E-584FFCEE1CE5}",
+                      "item/EstimateNo": "@{items('Apply_to_each_Row_in_filter_result')?['EstimateNo']}",
+                      "item/ProjectNo": "@{items('Apply_to_each_Row_in_filter_result')?['ProjectNo']}",
+                      "item/SumoQuoteProjectID": "@{items('Apply_to_each_Row_in_filter_result')?['SumoQuoteProjectID']}",
+                      "item/FirstName": "@{items('Apply_to_each_Row_in_filter_result')?['FirstName']}",
+                      "item/LastName": "@{items('Apply_to_each_Row_in_filter_result')?['LastName']}",
+                      "item/CompanyName": "@{items('Apply_to_each_Row_in_filter_result')?['CompanyName']}",
+                      "item/Phone": "@{items('Apply_to_each_Row_in_filter_result')?['Phone']}",
+                      "item/Email": "@{items('Apply_to_each_Row_in_filter_result')?['Email']}",
+                      "item/AddressLine1": "@{items('Apply_to_each_Row_in_filter_result')?['AddressLine1']}",
+                      "item/AddressLine2": "@{items('Apply_to_each_Row_in_filter_result')?['AddressLine2']}",
+                      "item/City": "@{items('Apply_to_each_Row_in_filter_result')?['City']}",
+                      "item/State": "@{items('Apply_to_each_Row_in_filter_result')?['State']}",
+                      "item/ZipCode": "@{items('Apply_to_each_Row_in_filter_result')?['ZipCode']}",
+                      "item/Status": "@{items('Apply_to_each_Row_in_filter_result')?['Status']}",
+                      "item/IsContractor": "@{items('Apply_to_each_Row_in_filter_result')?['IsContractor']}",
+                      "item/DateTime (UTC)": "@{items('Apply_to_each_Row_in_filter_result')?['DateTime (UTC)']}",
+                      "item/DateArchived": "@{utcNow()}"
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_excelonline",
+                      "operationId": "AddRowV2",
+                      "connectionName": "shared_excelonline"
+                    }
+                  },
+                  "metadata": {
+                    "E550BD3B3E47E33!120": "/Estimate%20Archive/EstimateDetailsArchive.xlsx"
+                  }
+                },
+                "Delete_row_from_Estimates_Table": {
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "parameters": {
+                      "file": "E550BD3B3E47E33!109",
+                      "table": "{EFFBB888-A54E-422B-A988-4DCDAA21FA1B}",
+                      "idColumn": "EstimateNo",
+                      "id": "@items('Apply_to_each_Row_in_filter_result')?['EstimateNo']"
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_excelonline",
+                      "operationId": "DeleteItem",
+                      "connectionName": "shared_excelonline"
+                    }
+                  },
+                  "runAfter": {
+                    "Add_a_row_into_archive": [
+                      "Succeeded"
+                    ]
+                  },
+                  "metadata": {
+                    "E550BD3B3E47E33!109": "/Estimates/FetchedEstimateDetails.xlsx"
+                  }
+                }
+              },
+              "runAfter": {
+                "Filter_array_based_on_status_and_datetime": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Get_Config_Data": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "file": "E550BD3B3E47E33!364",
+                  "table": "{0544FEC5-7AF1-4163-9377-B7B99D96B506}",
+                  "idColumn": "ID",
+                  "id": "786723"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_excelonline",
+                  "operationId": "GetItem",
+                  "connectionName": "shared_excelonline"
+                }
+              },
+              "metadata": {
+                "E550BD3B3E47E33!364": "/Config/ConfigCommon.xlsx"
+              }
+            }
+          },
+          "runAfter": {},
+          "metadata": {
+            "operationMetadataId": "925bea06-6911-4432-86cd-acb2a270ce00"
+          }
+        },
+        "Get_Failure_Details": {
+          "type": "Compose",
+          "inputs": "@result('Excel_Data_Clean_Up')",
+          "runAfter": {
+            "Excel_Data_Clean_Up": [
+              "TimedOut",
+              "Failed"
+            ]
+          }
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}
