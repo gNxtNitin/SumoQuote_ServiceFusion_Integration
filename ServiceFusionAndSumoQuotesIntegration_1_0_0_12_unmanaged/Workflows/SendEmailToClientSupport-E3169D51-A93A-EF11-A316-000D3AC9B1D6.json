@@ -2,31 +2,31 @@
   "properties": {
     "connectionReferences": {
       "shared_excelonline": {
-        "api": {
-          "name": "shared_excelonline"
-        },
+        "runtimeSource": "embedded",
         "connection": {
           "connectionReferenceLogicalName": "cr570_ExcelOnlineServiceFusionSumoQuoteIntegration"
         },
-        "runtimeSource": "embedded"
+        "api": {
+          "name": "shared_excelonline"
+        }
       },
       "shared_onedrive": {
-        "api": {
-          "name": "shared_onedrive"
-        },
+        "runtimeSource": "embedded",
         "connection": {
           "connectionReferenceLogicalName": "cr570_sharedonedrive_0881d"
         },
-        "runtimeSource": "embedded"
+        "api": {
+          "name": "shared_onedrive"
+        }
       },
       "shared_gmail": {
-        "api": {
-          "name": "shared_gmail"
-        },
+        "runtimeSource": "embedded",
         "connection": {
           "connectionReferenceLogicalName": "cr570_sharedgmail_c50b8"
         },
-        "runtimeSource": "embedded"
+        "api": {
+          "name": "shared_gmail"
+        }
       }
     },
     "definition": {
@@ -44,6 +44,7 @@
       },
       "triggers": {
         "manual": {
+          "metadata": {},
           "type": "Request",
           "kind": "Http",
           "inputs": {
@@ -129,25 +130,16 @@
                 }
               }
             }
-          },
-          "metadata": {}
+          }
         }
       },
       "actions": {
         "If_Email_Type_Is_Support": {
-          "type": "If",
-          "expression": {
-            "and": [
-              {
-                "contains": [
-                  "@triggerBody()?['emailtype']",
-                  "support"
-                ]
-              }
-            ]
-          },
           "actions": {
             "Get_Support_Email_Config_Details": {
+              "metadata": {
+                "E550BD3B3E47E33!294": "/Config/EmailConfig.xlsx"
+              },
               "type": "OpenApiConnection",
               "inputs": {
                 "parameters": {
@@ -161,25 +153,9 @@
                   "operationId": "GetItem",
                   "connectionName": "shared_excelonline"
                 }
-              },
-              "metadata": {
-                "E550BD3B3E47E33!294": "/Config/EmailConfig.xlsx"
               }
             },
             "If_response_contains_SS_path": {
-              "type": "If",
-              "expression": {
-                "and": [
-                  {
-                    "not": {
-                      "equals": [
-                        "@triggerBody()?['supportEmailContent']?['SSFileName']",
-                        "@null"
-                      ]
-                    }
-                  }
-                ]
-              },
               "actions": {
                 "Get_file_metadata_using_path": {
                   "type": "OpenApiConnection",
@@ -195,12 +171,17 @@
                   }
                 },
                 "Find_files_in_folder": {
+                  "runAfter": {
+                    "Get_file_metadata_using_path": [
+                      "Succeeded"
+                    ]
+                  },
                   "type": "OpenApiConnection",
                   "inputs": {
                     "parameters": {
                       "query": "@triggerBody()?['supportEmailContent']?['SSFileName']",
                       "id": "@outputs('Get_file_metadata_using_path')?['body/Id']",
-                      "findMode": "OneDriveSearch",
+                      "findMode": "Pattern",
                       "maxFileCount": 1
                     },
                     "host": {
@@ -208,25 +189,9 @@
                       "operationId": "FindFiles",
                       "connectionName": "shared_onedrive"
                     }
-                  },
-                  "runAfter": {
-                    "Get_file_metadata_using_path": [
-                      "Succeeded"
-                    ]
                   }
                 },
                 "If_SS_file_Found": {
-                  "type": "If",
-                  "expression": {
-                    "and": [
-                      {
-                        "greater": [
-                          "@length(body('Find_files_in_folder'))",
-                          0
-                        ]
-                      }
-                    ]
-                  },
                   "actions": {
                     "Get_file_content_-_SS": {
                       "type": "OpenApiConnection",
@@ -242,6 +207,11 @@
                       }
                     },
                     "Send_Email_To_Support-With_SS,_Log_File": {
+                      "runAfter": {
+                        "Get_file_content_using_path_-_LogFile-1": [
+                          "Succeeded"
+                        ]
+                      },
                       "type": "OpenApiConnection",
                       "inputs": {
                         "parameters": {
@@ -264,14 +234,15 @@
                           "operationId": "SendEmailV2",
                           "connectionName": "shared_gmail"
                         }
-                      },
-                      "runAfter": {
-                        "Get_file_content_using_path_-_LogFile-1": [
-                          "Succeeded"
-                        ]
                       }
                     },
                     "Send_Email_To_Support-With_SS,_No_Log_File": {
+                      "runAfter": {
+                        "Get_file_content_using_path_-_LogFile-1": [
+                          "TimedOut",
+                          "Failed"
+                        ]
+                      },
                       "type": "OpenApiConnection",
                       "inputs": {
                         "parameters": {
@@ -290,15 +261,14 @@
                           "operationId": "SendEmailV2",
                           "connectionName": "shared_gmail"
                         }
-                      },
-                      "runAfter": {
-                        "Get_file_content_using_path_-_LogFile-1": [
-                          "TimedOut",
-                          "Failed"
-                        ]
                       }
                     },
                     "Get_file_content_using_path_-_LogFile-1": {
+                      "runAfter": {
+                        "Get_file_content_-_SS": [
+                          "Succeeded"
+                        ]
+                      },
                       "type": "OpenApiConnection",
                       "inputs": {
                         "parameters": {
@@ -309,17 +279,22 @@
                           "operationId": "GetFileContentByPath",
                           "connectionName": "shared_onedrive"
                         }
-                      },
-                      "runAfter": {
-                        "Get_file_content_-_SS": [
-                          "Succeeded"
-                        ]
                       }
                     }
+                  },
+                  "runAfter": {
+                    "Find_files_in_folder": [
+                      "Succeeded"
+                    ]
                   },
                   "else": {
                     "actions": {
                       "Send_Email_To_Support-No_SS,_With_Log": {
+                        "runAfter": {
+                          "Get_file_content_using_path_-_LogFile-3": [
+                            "Succeeded"
+                          ]
+                        },
                         "type": "OpenApiConnection",
                         "inputs": {
                           "parameters": {
@@ -338,11 +313,6 @@
                             "operationId": "SendEmailV2",
                             "connectionName": "shared_gmail"
                           }
-                        },
-                        "runAfter": {
-                          "Get_file_content_using_path_-_LogFile-3": [
-                            "Succeeded"
-                          ]
                         }
                       },
                       "Get_file_content_using_path_-_LogFile-3": {
@@ -360,16 +330,32 @@
                       }
                     }
                   },
-                  "runAfter": {
-                    "Find_files_in_folder": [
-                      "Succeeded"
+                  "expression": {
+                    "and": [
+                      {
+                        "greater": [
+                          "@length(body('Find_files_in_folder'))",
+                          0
+                        ]
+                      }
                     ]
-                  }
+                  },
+                  "type": "If"
                 }
+              },
+              "runAfter": {
+                "Get_Support_Email_Config_Details": [
+                  "Succeeded"
+                ]
               },
               "else": {
                 "actions": {
                   "Send_Email_To_Support_with_Log_File_Attached": {
+                    "runAfter": {
+                      "Get_file_content_using_path_-_LogFile-2": [
+                        "Succeeded"
+                      ]
+                    },
                     "type": "OpenApiConnection",
                     "inputs": {
                       "parameters": {
@@ -388,11 +374,6 @@
                         "operationId": "SendEmailV2",
                         "connectionName": "shared_gmail"
                       }
-                    },
-                    "runAfter": {
-                      "Get_file_content_using_path_-_LogFile-2": [
-                        "Succeeded"
-                      ]
                     }
                   },
                   "Get_file_content_using_path_-_LogFile-2": {
@@ -409,6 +390,12 @@
                     }
                   },
                   "Send_Email_To_Support-No_Log_File": {
+                    "runAfter": {
+                      "Get_file_content_using_path_-_LogFile-2": [
+                        "TimedOut",
+                        "Failed"
+                      ]
+                    },
                     "type": "OpenApiConnection",
                     "inputs": {
                       "parameters": {
@@ -421,26 +408,32 @@
                         "operationId": "SendEmailV2",
                         "connectionName": "shared_gmail"
                       }
-                    },
-                    "runAfter": {
-                      "Get_file_content_using_path_-_LogFile-2": [
-                        "TimedOut",
-                        "Failed"
-                      ]
                     }
                   }
                 }
               },
-              "runAfter": {
-                "Get_Support_Email_Config_Details": [
-                  "Succeeded"
+              "expression": {
+                "and": [
+                  {
+                    "not": {
+                      "equals": [
+                        "@triggerBody()?['supportEmailContent']?['SSFileName']",
+                        "@null"
+                      ]
+                    }
+                  }
                 ]
-              }
+              },
+              "type": "If"
             }
           },
+          "runAfter": {},
           "else": {
             "actions": {
               "Get_Client_Email_Config_Details": {
+                "metadata": {
+                  "E550BD3B3E47E33!294": "/Config/EmailConfig.xlsx"
+                },
                 "type": "OpenApiConnection",
                 "inputs": {
                   "parameters": {
@@ -454,12 +447,14 @@
                     "operationId": "GetItem",
                     "connectionName": "shared_excelonline"
                   }
-                },
-                "metadata": {
-                  "E550BD3B3E47E33!294": "/Config/EmailConfig.xlsx"
                 }
               },
               "Send_Email_to_Client": {
+                "runAfter": {
+                  "Get_Client_Email_Config_Details": [
+                    "Succeeded"
+                  ]
+                },
                 "type": "OpenApiConnection",
                 "inputs": {
                   "parameters": {
@@ -472,19 +467,24 @@
                     "operationId": "SendEmailV2",
                     "connectionName": "shared_gmail"
                   }
-                },
-                "runAfter": {
-                  "Get_Client_Email_Config_Details": [
-                    "Succeeded"
-                  ]
                 }
               }
             }
           },
-          "runAfter": {},
+          "expression": {
+            "and": [
+              {
+                "contains": [
+                  "@triggerBody()?['emailtype']",
+                  "support"
+                ]
+              }
+            ]
+          },
           "metadata": {
             "operationMetadataId": "cda3d828-ff87-41ee-aa0e-f4550684da98"
-          }
+          },
+          "type": "If"
         }
       }
     },
