@@ -8,19 +8,19 @@
     <Version>1.0.0.13</Version>
     <Managed>1</Managed>
     <Publisher>
-      <UniqueName>Cr9afea</UniqueName>
+      <UniqueName>gNxt_Systems</UniqueName>
       <LocalizedNames>
-        <LocalizedName description="gNxt Sysytems" languagecode="1033" />
+        <LocalizedName description="gNxt Systems" languagecode="1033" />
       </LocalizedNames>
       <Descriptions />
       <EMailAddress xsi:nil="true"></EMailAddress>
       <SupportingWebsiteUrl xsi:nil="true"></SupportingWebsiteUrl>
-      <CustomizationPrefix>cr570</CustomizationPrefix>
-      <CustomizationOptionValuePrefix>28900</CustomizationOptionValuePrefix>
+      <CustomizationPrefix>gs</CustomizationPrefix>
+      <CustomizationOptionValuePrefix>12284</CustomizationOptionValuePrefix>
       <Addresses>
         <Address>
           <AddressNumber>1</AddressNumber>
-          <AddressTypeCode xsi:nil="true"></AddressTypeCode>
+          <AddressTypeCode>1</AddressTypeCode>
           <City xsi:nil="true"></City>
           <County xsi:nil="true"></County>
           <Country xsi:nil="true"></Country>
@@ -36,7 +36,7 @@
           <PostalCode xsi:nil="true"></PostalCode>
           <PostOfficeBox xsi:nil="true"></PostOfficeBox>
           <PrimaryContactName xsi:nil="true"></PrimaryContactName>
-          <ShippingMethodCode xsi:nil="true"></ShippingMethodCode>
+          <ShippingMethodCode>1</ShippingMethodCode>
           <StateOrProvince xsi:nil="true"></StateOrProvince>
           <Telephone1 xsi:nil="true"></Telephone1>
           <Telephone2 xsi:nil="true"></Telephone2>
@@ -48,7 +48,7 @@
         </Address>
         <Address>
           <AddressNumber>2</AddressNumber>
-          <AddressTypeCode xsi:nil="true"></AddressTypeCode>
+          <AddressTypeCode>1</AddressTypeCode>
           <City xsi:nil="true"></City>
           <County xsi:nil="true"></County>
           <Country xsi:nil="true"></Country>
@@ -64,7 +64,7 @@
           <PostalCode xsi:nil="true"></PostalCode>
           <PostOfficeBox xsi:nil="true"></PostOfficeBox>
           <PrimaryContactName xsi:nil="true"></PrimaryContactName>
-          <ShippingMethodCode xsi:nil="true"></ShippingMethodCode>
+          <ShippingMethodCode>1</ShippingMethodCode>
           <StateOrProvince xsi:nil="true"></StateOrProvince>
           <Telephone1 xsi:nil="true"></Telephone1>
           <Telephone2 xsi:nil="true"></Telephone2>
