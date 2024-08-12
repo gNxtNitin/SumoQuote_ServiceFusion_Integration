@@ -458,7 +458,7 @@
                     "uri": "https://api.servicefusion.com/v1/estimates",
                     "method": "GET",
                     "queries": {
-                      "fields": "number,customer_id,contact_first_name,contact_last_name,street_1, street_2, city, state_prov, postal_code,created_at",
+                      "fields": "number,customer_id,contact_first_name,contact_last_name,street_1, street_2, city, state_prov, postal_code,opportunity_owner,created_at",
                       "filters[requested_date][gte]": "@{outputs('LastFetchedDateTime')}",
                       "access_token": "@{variables('AccessToken')}",
                       "per-page": "50",
@@ -1040,7 +1040,8 @@
                                   "addressLine2": "@body('Parse_CurrentEstimateItem_JSON')?['street_2']",
                                   "city": "@body('Parse_CurrentEstimateItem_JSON')?['city']",
                                   "province": "@body('Parse_CurrentEstimateItem_JSON')?['state_prov']",
-                                  "postalCode": "@body('Parse_CurrentEstimateItem_JSON')?['postal_code']"
+                                  "postalCode": "@body('Parse_CurrentEstimateItem_JSON')?['postal_code']",
+                                  "salespersonEmail": "@variables('OppOwnerEmail')"
                                 }
                               },
                               "runAfter": {
@@ -1155,7 +1156,7 @@
                                 "operationMetadataId": "9ae0d703-10e4-4dfd-9e10-4605a8256210"
                               }
                             },
-                            "Append_to_array_variable_FailedEstimateNoList": {
+                            "Append_to_array_variable_FailedEstimateNoList_-_2": {
                               "type": "AppendToArrayVariable",
                               "inputs": {
                                 "name": "FailedEstimateNoList",
@@ -1172,7 +1173,7 @@
                               "type": "Compose",
                               "inputs": "@actions('Create_Project_On_SumoQuote')",
                               "runAfter": {
-                                "Append_to_array_variable_FailedEstimateNoList": [
+                                "Append_to_array_variable_FailedEstimateNoList_-_2": [
                                   "Succeeded"
                                 ]
                               },
@@ -1235,7 +1236,7 @@
                                 }
                               },
                               "runAfter": {
-                                "Add_Estimate_to_Excel_Sheet": [
+                                "If_Email_Found_For_opportunity_Owner": [
                                   "Succeeded"
                                 ]
                               }
@@ -1286,6 +1287,262 @@
                               },
                               "runAfter": {
                                 "Create_CSV_table_-_Create_Project_Failed": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "runtimeConfiguration": {
+                                "contentTransfer": {
+                                  "transferMode": "Chunked"
+                                }
+                              }
+                            },
+                            "Log_Text_-_27": {
+                              "type": "AppendToArrayVariable",
+                              "inputs": {
+                                "name": "LogText",
+                                "value": {
+                                  "@variables('LogTextColNames')?[0]": "@utcNow()",
+                                  "@variables('LogTextColNames')?[1]": "Cloud Flow",
+                                  "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
+                                  "@variables('LogTextColNames')?[3]": "INFO",
+                                  "@variables('LogTextColNames')?[4]": "Getting Users Detail From SumoQuote"
+                                }
+                              },
+                              "runAfter": {
+                                "Add_Estimate_to_Excel_Sheet": [
+                                  "Succeeded"
+                                ]
+                              }
+                            },
+                            "Get_Users_Details_From_SumoQuote": {
+                              "type": "Http",
+                              "inputs": {
+                                "uri": "https://api.sumoquote.com/v1/User",
+                                "method": "GET",
+                                "headers": {
+                                  "sq-api-key": "@{body('Get_Config_Details')?['SumoQuoteAPIKey']}"
+                                }
+                              },
+                              "runAfter": {
+                                "Log_Text_-_27": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "runtimeConfiguration": {
+                                "contentTransfer": {
+                                  "transferMode": "Chunked"
+                                }
+                              },
+                              "metadata": {
+                                "operationMetadataId": "1b5b76d3-4241-4c53-9926-2696c3b55226"
+                              }
+                            },
+                            "Get_Opportunity_Owner's_SumoQuote_User_Email": {
+                              "type": "Query",
+                              "inputs": {
+                                "from": "@body('Get_Users_Details_From_SumoQuote')?['Data']",
+                                "where": "@equals(toLower(trim(item()?['FullName'])),toLower(trim(body('Parse_CurrentEstimateItem_JSON')?['opportunity_owner'])))"
+                              },
+                              "runAfter": {
+                                "Log_Text_-_28": [
+                                  "Succeeded"
+                                ]
+                              }
+                            },
+                            "Append_to_array_variable_FailedEstimateNoList-1": {
+                              "type": "AppendToArrayVariable",
+                              "inputs": {
+                                "name": "FailedEstimateNoList",
+                                "value": "@items('For_Each_Estimate_in_Estimates_List')?['number']"
+                              },
+                              "runAfter": {
+                                "Get_Users_Details_From_SumoQuote": [
+                                  "TimedOut",
+                                  "Failed"
+                                ]
+                              }
+                            },
+                            "Get_Failed_Action_Details_-_users_data_not_fetched": {
+                              "type": "Compose",
+                              "inputs": "@actions('Get_Users_Details_From_SumoQuote')",
+                              "runAfter": {
+                                "Append_to_array_variable_FailedEstimateNoList-1": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "metadata": {
+                                "operationMetadataId": "08f3e77a-b7d3-49bd-b1a4-1efdc91d19f2"
+                              }
+                            },
+                            "If_Email_Found_For_opportunity_Owner": {
+                              "type": "If",
+                              "expression": {
+                                "and": [
+                                  {
+                                    "not": {
+                                      "equals": [
+                                        "@body('Get_Opportunity_Owner''s_SumoQuote_User_Email')?[0]?['EmailAddress']",
+                                        "@null"
+                                      ]
+                                    }
+                                  }
+                                ]
+                              },
+                              "actions": {
+                                "Set_variable_oppOwnerEmail_-_Found_Email": {
+                                  "type": "SetVariable",
+                                  "inputs": {
+                                    "name": "OppOwnerEmail",
+                                    "value": "@body('Get_Opportunity_Owner''s_SumoQuote_User_Email')?[0]?['EmailAddress']"
+                                  },
+                                  "runAfter": {
+                                    "Log_Text_-_29": [
+                                      "Succeeded"
+                                    ]
+                                  }
+                                },
+                                "Log_Text_-_29": {
+                                  "type": "AppendToArrayVariable",
+                                  "inputs": {
+                                    "name": "LogText",
+                                    "value": {
+                                      "@variables('LogTextColNames')?[0]": "@utcNow()",
+                                      "@variables('LogTextColNames')?[1]": "Cloud Flow",
+                                      "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
+                                      "@variables('LogTextColNames')?[3]": "INFO",
+                                      "@variables('LogTextColNames')?[4]": "Opportunity Owner's Email Found - @{variables('OppOwnerEmail')}"
+                                    }
+                                  }
+                                }
+                              },
+                              "else": {
+                                "actions": {
+                                  "Set_variable_OppOwnerEmail_-_Default_Email": {
+                                    "type": "SetVariable",
+                                    "inputs": {
+                                      "name": "OppOwnerEmail",
+                                      "value": "@body('Get_Config_Details')?['DefaultOppOwnerEmail']"
+                                    },
+                                    "runAfter": {
+                                      "Log_Text_-_30": [
+                                        "Succeeded"
+                                      ]
+                                    }
+                                  },
+                                  "Log_Text_-_30": {
+                                    "type": "AppendToArrayVariable",
+                                    "inputs": {
+                                      "name": "LogText",
+                                      "value": {
+                                        "@variables('LogTextColNames')?[0]": "@utcNow()",
+                                        "@variables('LogTextColNames')?[1]": "Cloud Flow",
+                                        "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
+                                        "@variables('LogTextColNames')?[3]": "INFO",
+                                        "@variables('LogTextColNames')?[4]": "Opportunity Owner's Email Not Found - Using Default Email - @{body('Get_Config_Details')?['DefaultOppOwnerEmail']}"
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              "runAfter": {
+                                "Get_Opportunity_Owner's_SumoQuote_User_Email": [
+                                  "Succeeded"
+                                ]
+                              }
+                            },
+                            "Log_Text_-_28": {
+                              "type": "AppendToArrayVariable",
+                              "inputs": {
+                                "name": "LogText",
+                                "value": {
+                                  "@variables('LogTextColNames')?[0]": "@utcNow()",
+                                  "@variables('LogTextColNames')?[1]": "Cloud Flow",
+                                  "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
+                                  "@variables('LogTextColNames')?[3]": "INFO",
+                                  "@variables('LogTextColNames')?[4]": "User Details Fetched From SumoQuote successfully"
+                                }
+                              },
+                              "runAfter": {
+                                "Get_Users_Details_From_SumoQuote": [
+                                  "Succeeded"
+                                ]
+                              }
+                            },
+                            "Log_Text_-_31": {
+                              "type": "AppendToArrayVariable",
+                              "inputs": {
+                                "name": "LogText",
+                                "value": {
+                                  "@variables('LogTextColNames')?[0]": "@utcNow()",
+                                  "@variables('LogTextColNames')?[1]": "Cloud Flow",
+                                  "@variables('LogTextColNames')?[2]": "@{workflow()?['tags']?['flowDisplayName']}",
+                                  "@variables('LogTextColNames')?[3]": "Error",
+                                  "@variables('LogTextColNames')?[4]": "Request Failed for get users details from SQ For EstimateNo - @{body('Parse_CurrentEstimateItem_JSON')?['number']}, Error - @{body('Get_Users_Details_From_SumoQuote')}"
+                                }
+                              },
+                              "runAfter": {
+                                "Get_Failed_Action_Details_-_users_data_not_fetched": [
+                                  "Succeeded"
+                                ]
+                              }
+                            },
+                            "Create_CSV_table_-_Get_SQ_Users_Request_Failed": {
+                              "type": "Table",
+                              "inputs": {
+                                "from": "@variables('LogText')",
+                                "format": "CSV"
+                              },
+                              "runAfter": {
+                                "Log_Text_-_31": [
+                                  "Succeeded"
+                                ]
+                              }
+                            },
+                            "Create_file_LogText_on_OneDrive-Get_SQ_Users_Request_Failed": {
+                              "type": "OpenApiConnection",
+                              "inputs": {
+                                "parameters": {
+                                  "folderPath": "/Logs/SumoQuote Project",
+                                  "name": "@substring(variables('LogFilePath'), add(lastIndexOf(variables('LogFilePath'), '/'),1))",
+                                  "body": "@body('Create_CSV_table_-_Get_SQ_Users_Request_Failed')"
+                                },
+                                "host": {
+                                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_onedrive",
+                                  "operationId": "CreateFile",
+                                  "connectionName": "shared_onedrive"
+                                }
+                              },
+                              "runAfter": {
+                                "Create_CSV_table_-_Get_SQ_Users_Request_Failed": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "runtimeConfiguration": {
+                                "contentTransfer": {
+                                  "transferMode": "Chunked"
+                                }
+                              }
+                            },
+                            "Send_Email_-_Support_-_Get_SQ_Users_Request_Failed": {
+                              "type": "Http",
+                              "inputs": {
+                                "uri": "@body('Get_Config_Details')?['EmailTriggerURL']",
+                                "method": "POST",
+                                "body": {
+                                  "emailtype": "support",
+                                  "flowtype": "cloud flow",
+                                  "supportEmailContent": {
+                                    "flowName": "@{workflow()?['tags']?['flowDisplayName']}",
+                                    "failedAction": "@{outputs('Get_Failed_Action_Details_-_users_data_not_fetched')?['name']}",
+                                    "failureMessage": "@{body('Get_Users_Details_From_SumoQuote')}",
+                                    "flowRunURL": "@{concat('https://make.powerautomate.com/manage/environments/', workflow()?['tags']?['environmentName'], '/flows/', workflow()?['name'], '/runs/', workflow()?['run']['name'])}",
+                                    "LogFilePath": "@{variables('LogFilePath')}"
+                                  },
+                                  "clientEmailContent": {}
+                                }
+                              },
+                              "runAfter": {
+                                "Create_file_LogText_on_OneDrive-Get_SQ_Users_Request_Failed": [
                                   "Succeeded"
                                 ]
                               },
@@ -2020,7 +2277,7 @@
             }
           },
           "runAfter": {
-            "Initialize_variable_PreviousFetchedEstNum": [
+            "Initialize_variable_OppOwnerEmail": [
               "Succeeded"
             ]
           },
@@ -2586,6 +2843,22 @@
             "contentTransfer": {
               "transferMode": "Chunked"
             }
+          }
+        },
+        "Initialize_variable_OppOwnerEmail": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "OppOwnerEmail",
+                "type": "string"
+              }
+            ]
+          },
+          "runAfter": {
+            "Initialize_variable_PreviousFetchedEstNum": [
+              "Succeeded"
+            ]
           }
         }
       }
