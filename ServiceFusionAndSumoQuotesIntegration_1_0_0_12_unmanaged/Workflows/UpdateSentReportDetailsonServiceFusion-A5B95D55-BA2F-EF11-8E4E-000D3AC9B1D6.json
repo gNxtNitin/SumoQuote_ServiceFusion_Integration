@@ -1898,7 +1898,7 @@
           },
           "runAfter": {
             "Create_file_LogText_on_OneDrive": [
-              "SUCCEEDED"
+              "Succeeded"
             ]
           }
         },
@@ -2445,7 +2445,7 @@
               },
               "runAfter": {
                 "Apply_to_each_csv_file": [
-                  "SUCCEEDED"
+                  "Succeeded"
                 ]
               }
             },
@@ -2457,7 +2457,7 @@
               },
               "runAfter": {
                 "Log_Text_-_30": [
-                  "SUCCEEDED"
+                  "Succeeded"
                 ]
               }
             },
@@ -2469,33 +2469,51 @@
               },
               "runAfter": {
                 "Set_variable_IsUpdate_to_True": [
-                  "SUCCEEDED"
+                  "Succeeded"
                 ]
               }
             },
-            "Update_the_Incremented_CurrentReportVersion": {
-              "type": "OpenApiConnection",
-              "inputs": {
-                "parameters": {
-                  "file": "E550BD3B3E47E33!109",
-                  "table": "{EFFBB888-A54E-422B-A988-4DCDAA21FA1B}",
-                  "idColumn": "EstimateNo",
-                  "id": "@variables('ProjectNo')",
-                  "item/CurrentReportVersion": "@add(variables('CurrentReptVer'), 1)"
-                },
-                "host": {
-                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_excelonline",
-                  "operationId": "PatchItem",
-                  "connectionName": "shared_excelonline-1"
+            "If_Status_is_SNTREPUPDT": {
+              "type": "If",
+              "expression": {
+                "and": [
+                  {
+                    "contains": [
+                      "@body('Get_details_of_Current_EstimateNo')?['Status']",
+                      "SNTREPUPDT"
+                    ]
+                  }
+                ]
+              },
+              "actions": {
+                "Update_the_Incremented_CurrentReportVersion": {
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "parameters": {
+                      "file": "E550BD3B3E47E33!109",
+                      "table": "{EFFBB888-A54E-422B-A988-4DCDAA21FA1B}",
+                      "idColumn": "EstimateNo",
+                      "id": "@variables('ProjectNo')",
+                      "item/CurrentReportVersion": "@add(variables('CurrentReptVer'), 1)"
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_excelonline",
+                      "operationId": "PatchItem",
+                      "connectionName": "shared_excelonline-1"
+                    }
+                  },
+                  "metadata": {
+                    "E550BD3B3E47E33!109": "/Estimates/FetchedEstimateDetails.xlsx"
+                  }
                 }
+              },
+              "else": {
+                "actions": {}
               },
               "runAfter": {
                 "Set_variable_CurrentRepVersion": [
-                  "SUCCEEDED"
+                  "Succeeded"
                 ]
-              },
-              "metadata": {
-                "E550BD3B3E47E33!109": "/Estimates/FetchedEstimateDetails.xlsx"
               }
             }
           },
@@ -2522,7 +2540,7 @@
                 },
                 "runAfter": {
                   "Log_Text_-_31": [
-                    "SUCCEEDED"
+                    "Succeeded"
                   ]
                 }
               },
@@ -2544,7 +2562,7 @@
                 },
                 "runAfter": {
                   "Set_variable_CurrentRepVersion_to_1": [
-                    "SUCCEEDED"
+                    "Succeeded"
                   ]
                 },
                 "metadata": {
@@ -2559,7 +2577,7 @@
                 },
                 "runAfter": {
                   "Set_variable_IsUpdate_to_False": [
-                    "SUCCEEDED"
+                    "Succeeded"
                   ]
                 }
               }
