@@ -8617,7 +8617,7 @@
           "ElementTypeName": "Button",
           "InstanceId": "4267cbef-54ee-4e9e-9495-0ec4c47cfe24",
           "Name": "Button 'Accept' Modal",
-          "SelectorCount": 2,
+          "SelectorCount": 1,
           "Selectors": [
             {
               "CustomSelector": null,
@@ -8654,7 +8654,7 @@
                     }
                   ],
                   "CustomValue": null,
-                  "Ignore": false,
+                  "Ignore": true,
                   "Name": "Body '/*<![CDATA[*/ var rowCount = 25; var sessi ...  File too largeAccept Print Estimate Cancel Print'",
                   "Tag": "body"
                 },
@@ -8690,7 +8690,7 @@
                     }
                   ],
                   "CustomValue": null,
-                  "Ignore": false,
+                  "Ignore": true,
                   "Name": "Div '1049304193_ image_4.jpg: File too largeAccept'",
                   "Tag": "div"
                 },
@@ -8726,7 +8726,7 @@
                     }
                   ],
                   "CustomValue": null,
-                  "Ignore": false,
+                  "Ignore": true,
                   "Name": "Div '1049304193_ image_4.jpg: File too largeAccept'",
                   "Tag": "div"
                 },
@@ -8783,7 +8783,7 @@
                     }
                   ],
                   "CustomValue": null,
-                  "Ignore": false,
+                  "Ignore": true,
                   "Name": "Form '1049304193_ image_4.jpg: File too largeAccept'",
                   "Tag": "form"
                 },
@@ -8819,7 +8819,7 @@
                     }
                   ],
                   "CustomValue": null,
-                  "Ignore": false,
+                  "Ignore": true,
                   "Name": "Div 'Accept'",
                   "Tag": "div"
                 },
@@ -8894,24 +8894,6 @@
               "IsImageBased": false,
               "IsWindowsInstance": false,
               "Name": "Default Selector",
-              "Properties": []
-            },
-            {
-              "CustomSelector": null,
-              "Elements": [],
-              "Ignore": false,
-              "ImageSelector": {
-                "Image": {
-                  "EncodedData": "iVBORw0KGgoAAAANSUhEUgAAAGYAAAAdCAYAAABYOhlgAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAGeSURBVGhD7ZW7jYRAEEQ3J8IgBYiAAIiCILCJAw+bEPDAw55TIZVU2ze7qzNupyXaeOLTQw/UY+BxHEcK/PFYliUFPngSc55nCsoTYpwSYpwSYpwSYpwSYpwSYpziQsy2balt29T3fdr3PTumBNM0pWEYsrX/xoUYBAApkDPPc3ZMCW4tBisEUiAEIeSCWNc11XWdqqq6QGCscbWxZq/HWNbQA71Yw9hxHK/5bV2vK7GSi4tBEF3XXQFDDkLGPusMnitJjymVouwxthqq7Q8xCJ69sbVyci/KNyguBg/Oh7fBAhuuYoNWcA7CdYUAzMX+OjfIidX6NykqJheeFWHDU95JQ0/9/CkqhvtE57utGDx4LjjAz4sGZfkkpmmaXytGQd8QY7CfDXtew3kV/qdPmf6bcqgEYO/plmLevdEauA1Yw8vJ1bBxXsXZXhinP3sr+pZi8MCvVgIDZOAITv8XGhbHsmZ7YixrQFcQ74HXqyTAeVXWtyj6jykNxKhkT4SYEOOPEBP8mRDjlBDjlBDjlBDjlBDjlBDjlGcxR/oBoHZdxvJY5WcAAAAASUVORK5CYII="
-                },
-                "ImagePath": "controlRepo-selector\\93bc9771-3553-41ed-a6f9-7b3f09ab7fda.png",
-                "WindowScaling": 1.5,
-                "OriginalRetractionConfidence": 0.97453784942626953
-              },
-              "IsCustom": false,
-              "IsImageBased": true,
-              "IsWindowsInstance": false,
-              "Name": "Image",
               "Properties": []
             }
           ],

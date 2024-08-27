@@ -2,40 +2,40 @@
   "properties": {
     "connectionReferences": {
       "shared_conversionservice": {
-        "api": {
-          "name": "shared_conversionservice"
-        },
+        "runtimeSource": "embedded",
         "connection": {
           "connectionReferenceLogicalName": "cr570_sharedconversionservice_6379c"
         },
-        "runtimeSource": "embedded"
+        "api": {
+          "name": "shared_conversionservice"
+        }
       },
       "shared_onedrive-1": {
-        "api": {
-          "name": "shared_onedrive"
-        },
+        "runtimeSource": "embedded",
         "connection": {
           "connectionReferenceLogicalName": "cr570_sharedonedrive_0881d"
         },
-        "runtimeSource": "embedded"
+        "api": {
+          "name": "shared_onedrive"
+        }
       },
       "shared_uiflow-1": {
-        "api": {
-          "name": "shared_uiflow"
-        },
+        "runtimeSource": "embedded",
         "connection": {
           "connectionReferenceLogicalName": "new_shareduiflow_f8a57"
         },
-        "runtimeSource": "embedded"
+        "api": {
+          "name": "shared_uiflow"
+        }
       },
       "shared_excelonline-1": {
-        "api": {
-          "name": "shared_excelonline"
-        },
+        "runtimeSource": "embedded",
         "connection": {
           "connectionReferenceLogicalName": "cr570_ExcelOnlineServiceFusionSumoQuoteIntegration"
         },
-        "runtimeSource": "embedded"
+        "api": {
+          "name": "shared_excelonline"
+        }
       }
     },
     "definition": {
@@ -53,18 +53,26 @@
       },
       "triggers": {
         "manual": {
+          "metadata": {
+            "operationMetadataId": "83707723-aad7-43d3-9136-37087e089bce"
+          },
           "type": "Request",
           "kind": "Http",
           "inputs": {
             "triggerAuthenticationType": "All"
-          },
-          "metadata": {
-            "operationMetadataId": "83707723-aad7-43d3-9136-37087e089bce"
           }
         }
       },
       "actions": {
         "Variable_for_Storing_Current_ImageID_Inside_Loop": {
+          "runAfter": {
+            "Variable_For_Storing_ReportId": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "67977491-a497-460b-adb5-cebdfe4a350c"
+          },
           "type": "InitializeVariable",
           "inputs": {
             "variables": [
@@ -73,17 +81,17 @@
                 "type": "string"
               }
             ]
-          },
+          }
+        },
+        "Variable_For_Storing_ProjectNo": {
           "runAfter": {
-            "Variable_For_Storing_ReportId": [
+            "Parse_The_Report_Details": [
               "Succeeded"
             ]
           },
           "metadata": {
-            "operationMetadataId": "67977491-a497-460b-adb5-cebdfe4a350c"
-          }
-        },
-        "Variable_For_Storing_ProjectNo": {
+            "operationMetadataId": "f465659e-baf6-4ba5-b3ae-889dafe2f9ea"
+          },
           "type": "InitializeVariable",
           "inputs": {
             "variables": [
@@ -93,17 +101,17 @@
                 "value": "@{outputs('Parse_The_Report_Details')?['ProjectIdDisplay']}"
               }
             ]
-          },
+          }
+        },
+        "Variable_For_Storing_ReportId": {
           "runAfter": {
-            "Parse_The_Report_Details": [
+            "Variable_For_Storing_ProjectNo": [
               "Succeeded"
             ]
           },
           "metadata": {
-            "operationMetadataId": "f465659e-baf6-4ba5-b3ae-889dafe2f9ea"
-          }
-        },
-        "Variable_For_Storing_ReportId": {
+            "operationMetadataId": "7b03efb3-e5e0-455a-841f-7a64049985a8"
+          },
           "type": "InitializeVariable",
           "inputs": {
             "variables": [
@@ -113,17 +121,17 @@
                 "value": "@{outputs('Parse_The_Report_Details')?['Id']}"
               }
             ]
-          },
+          }
+        },
+        "Variable_For_Storing_Estimate_Details_Page": {
           "runAfter": {
-            "Variable_For_Storing_ProjectNo": [
+            "Variable_for_Storing_Current_ImageID_Inside_Loop": [
               "Succeeded"
             ]
           },
           "metadata": {
-            "operationMetadataId": "7b03efb3-e5e0-455a-841f-7a64049985a8"
-          }
-        },
-        "Variable_For_Storing_Estimate_Details_Page": {
+            "operationMetadataId": "b9886dd6-2560-4fee-9dce-42022134d37b"
+          },
           "type": "InitializeVariable",
           "inputs": {
             "variables": [
@@ -133,17 +141,17 @@
                 "value": "@outputs('Parse_The_Report_Details')?['EstimateDetailsPage']"
               }
             ]
-          },
+          }
+        },
+        "Variable_For_Current_Estimate_Tier_Number": {
           "runAfter": {
-            "Variable_for_Storing_Current_ImageID_Inside_Loop": [
+            "Variable_For_Storing_Estimate_Details_Page": [
               "Succeeded"
             ]
           },
           "metadata": {
-            "operationMetadataId": "b9886dd6-2560-4fee-9dce-42022134d37b"
-          }
-        },
-        "Variable_For_Current_Estimate_Tier_Number": {
+            "operationMetadataId": "27d1aa0a-e8bd-4d4c-8976-15bf41fd3ab7"
+          },
           "type": "InitializeVariable",
           "inputs": {
             "variables": [
@@ -153,19 +161,9 @@
                 "value": 1
               }
             ]
-          },
-          "runAfter": {
-            "Variable_For_Storing_Estimate_Details_Page": [
-              "Succeeded"
-            ]
-          },
-          "metadata": {
-            "operationMetadataId": "27d1aa0a-e8bd-4d4c-8976-15bf41fd3ab7"
           }
         },
         "Parse_The_Report_Details": {
-          "type": "Compose",
-          "inputs": "@triggerBody()",
           "runAfter": {
             "Log_Text_-_8": [
               "Succeeded"
@@ -173,46 +171,38 @@
           },
           "metadata": {
             "operationMetadataId": "4d11b394-93c8-47eb-b874-8180658e9806"
-          }
+          },
+          "type": "Compose",
+          "inputs": "@triggerBody()"
         },
         "Get_Report_Details_In_OneDrive": {
-          "type": "Scope",
           "actions": {
             "Get_Inspection_Images_and_upload_to_Drive": {
-              "type": "Scope",
               "actions": {
                 "For_Each_Inspection_Section": {
-                  "type": "Foreach",
                   "foreach": "@outputs('Parse_The_Report_Details')?['InspectionPage']?['InspectionSections']",
                   "actions": {
                     "For_Each_Inspection_Item": {
-                      "type": "Foreach",
                       "foreach": "@items('For_Each_Inspection_Section')?['InspectionItems']",
                       "actions": {
                         "If_ImageId_Is_not_Empty": {
-                          "type": "If",
-                          "expression": {
-                            "and": [
-                              {
-                                "equals": [
-                                  "@empty(items('For_Each_Inspection_Item')?['ImageId'])",
-                                  "@false"
-                                ]
-                              }
-                            ]
-                          },
                           "actions": {
                             "Set_variable_ImageId": {
+                              "metadata": {
+                                "operationMetadataId": "7ed99630-5383-4e94-9cba-c2556d2321f8"
+                              },
                               "type": "SetVariable",
                               "inputs": {
                                 "name": "CurrentImageId",
                                 "value": "@items('For_Each_Inspection_Item')?['ImageId']"
-                              },
-                              "metadata": {
-                                "operationMetadataId": "7ed99630-5383-4e94-9cba-c2556d2321f8"
                               }
                             },
                             "Convert_Html_to_text_-_Image_Comments": {
+                              "runAfter": {
+                                "Set_variable_ImageId": [
+                                  "Succeeded"
+                                ]
+                              },
                               "type": "OpenApiConnection",
                               "inputs": {
                                 "parameters": {
@@ -223,14 +213,14 @@
                                   "operationId": "HtmlToText",
                                   "connectionName": "shared_conversionservice"
                                 }
-                              },
-                              "runAfter": {
-                                "Set_variable_ImageId": [
-                                  "Succeeded"
-                                ]
                               }
                             },
                             "Append_to_array_variable_ImagesIdList": {
+                              "runAfter": {
+                                "Convert_Html_to_text_-_Image_Comments": [
+                                  "Succeeded"
+                                ]
+                              },
                               "type": "AppendToArrayVariable",
                               "inputs": {
                                 "name": "ImagesIdList",
@@ -238,22 +228,29 @@
                                   "ImageId": "@{items('For_Each_Inspection_Item')?['ImageId']}",
                                   "comment": "@{body('Convert_Html_to_text_-_Image_Comments')}"
                                 }
-                              },
-                              "runAfter": {
-                                "Convert_Html_to_text_-_Image_Comments": [
-                                  "Succeeded"
-                                ]
                               }
                             }
                           },
                           "else": {
                             "actions": {}
-                          }
+                          },
+                          "expression": {
+                            "and": [
+                              {
+                                "equals": [
+                                  "@empty(items('For_Each_Inspection_Item')?['ImageId'])",
+                                  "@false"
+                                ]
+                              }
+                            ]
+                          },
+                          "type": "If"
                         }
                       },
                       "metadata": {
                         "operationMetadataId": "bca8da38-ae34-4187-bfdd-26d9cfa38c62"
-                      }
+                      },
+                      "type": "Foreach"
                     }
                   },
                   "runAfter": {
@@ -263,9 +260,15 @@
                   },
                   "metadata": {
                     "operationMetadataId": "3d70c3be-0b60-41fd-a811-a03f1bd8e72f"
-                  }
+                  },
+                  "type": "Foreach"
                 },
                 "Log_Text_-_11": {
+                  "runAfter": {
+                    "For_Each_Inspection_Section": [
+                      "Succeeded"
+                    ]
+                  },
                   "type": "AppendToArrayVariable",
                   "inputs": {
                     "name": "LogText",
@@ -276,11 +279,6 @@
                       "@variables('LogTextColNames')?[3]": "Info",
                       "@variables('LogTextColNames')?[4]": "Storing Image Id's To Array - Succeeded"
                     }
-                  },
-                  "runAfter": {
-                    "For_Each_Inspection_Section": [
-                      "Succeeded"
-                    ]
                   }
                 },
                 "Log_Text_-9": {
@@ -299,12 +297,20 @@
               },
               "metadata": {
                 "operationMetadataId": "f1503607-e089-4d67-b68d-bac2ea29ef1f"
-              }
+              },
+              "type": "Scope"
             },
             "Get_Report_PDF": {
-              "type": "Scope",
               "actions": {
                 "Get_PDF_Download_URL": {
+                  "runAfter": {
+                    "Log_Text_-_10": [
+                      "Succeeded"
+                    ]
+                  },
+                  "metadata": {
+                    "operationMetadataId": "a7fd8069-a8c1-44fa-8966-dcbe3bbd1136"
+                  },
                   "type": "Http",
                   "inputs": {
                     "uri": "https://api.sumoquote.com/v1/Project/@{outputs('Parse_The_Report_Details')?['ProjectId']}/Report/@{variables('ReportId')}/download",
@@ -321,11 +327,6 @@
                       "maximumInterval": "PT1M"
                     }
                   },
-                  "runAfter": {
-                    "Log_Text_-_10": [
-                      "Succeeded"
-                    ]
-                  },
                   "runtimeConfiguration": {
                     "contentTransfer": {
                       "transferMode": "Chunked"
@@ -336,24 +337,26 @@
                         "outputs"
                       ]
                     }
-                  },
-                  "metadata": {
-                    "operationMetadataId": "a7fd8069-a8c1-44fa-8966-dcbe3bbd1136"
                   }
                 },
                 "Set_variable_ReportURL": {
-                  "type": "SetVariable",
-                  "inputs": {
-                    "name": "ReportURL",
-                    "value": "@body('Get_PDF_Download_URL')?['Data']?['FileUrl']"
-                  },
                   "runAfter": {
                     "Get_PDF_Download_URL": [
                       "Succeeded"
                     ]
+                  },
+                  "type": "SetVariable",
+                  "inputs": {
+                    "name": "ReportURL",
+                    "value": "@body('Get_PDF_Download_URL')?['Data']?['FileUrl']"
                   }
                 },
                 "Log_Text_-_12": {
+                  "runAfter": {
+                    "Set_variable_ReportURL": [
+                      "Succeeded"
+                    ]
+                  },
                   "type": "AppendToArrayVariable",
                   "inputs": {
                     "name": "LogText",
@@ -364,11 +367,6 @@
                       "@variables('LogTextColNames')?[3]": "Info",
                       "@variables('LogTextColNames')?[4]": "Getting Report PDF URL - Succeeded"
                     }
-                  },
-                  "runAfter": {
-                    "Set_variable_ReportURL": [
-                      "Succeeded"
-                    ]
                   }
                 },
                 "Log_Text_-_10": {
@@ -387,17 +385,14 @@
               },
               "metadata": {
                 "operationMetadataId": "c2665156-e7b6-4761-a556-e8c6c794ab0e"
-              }
+              },
+              "type": "Scope"
             },
             "Get_Quote_Details": {
-              "type": "Scope",
               "actions": {
                 "Tier1_Estimate_Details": {
-                  "type": "Scope",
                   "actions": {
                     "Tier_1_JSON": {
-                      "type": "Compose",
-                      "inputs": "@variables('EstimateDetailsPage')?['Tier1']",
                       "runAfter": {
                         "Log_Text_-_13": [
                           "Succeeded"
@@ -405,26 +400,19 @@
                       },
                       "metadata": {
                         "operationMetadataId": "51a00df1-9993-4ef6-b1ea-ab03a5907726"
-                      }
+                      },
+                      "type": "Compose",
+                      "inputs": "@variables('EstimateDetailsPage')?['Tier1']"
                     },
                     "If_Tier_1_Is_Present": {
-                      "type": "If",
-                      "expression": {
-                        "and": [
-                          {
-                            "equals": [
-                              "@outputs('Tier_1_JSON')?['Show']",
-                              "@true"
-                            ]
-                          }
-                        ]
-                      },
                       "actions": {
                         "For_Each_EstimateSection_In_Tier_1": {
-                          "type": "Foreach",
                           "foreach": "@outputs('Tier_1_JSON')?['EstimateSections']",
                           "actions": {
                             "Select_Name,_Description,_Price_And_Quantity_For_Tier_1": {
+                              "metadata": {
+                                "operationMetadataId": "22e1bae1-8cae-4181-ab83-a4b5873015d3"
+                              },
                               "type": "Select",
                               "inputs": {
                                 "from": "@items('For_Each_EstimateSection_In_Tier_1')?['EstimateItems']",
@@ -434,21 +422,12 @@
                                   "Price": "@item()?['Price']",
                                   "Description": "@item()?['Description']"
                                 }
-                              },
-                              "metadata": {
-                                "operationMetadataId": "22e1bae1-8cae-4181-ab83-a4b5873015d3"
                               }
                             },
                             "For_each_Line_Item_in_Tier_1": {
-                              "type": "Foreach",
                               "foreach": "@body('Filter_Line_Items_Where_Qty_Is_Not_Zero_and_Price_Is_Not_Zero_-_Tier_1')",
                               "actions": {
                                 "Add_to_LineItems_Array_For_Tier_1": {
-                                  "type": "AppendToArrayVariable",
-                                  "inputs": {
-                                    "name": "Tier1LineItems",
-                                    "value": "@outputs('Add_EstimateTierName_-_Tier_1_')"
-                                  },
                                   "runAfter": {
                                     "Add_EstimateTierName_-_Tier_1_": [
                                       "Succeeded"
@@ -456,14 +435,19 @@
                                   },
                                   "metadata": {
                                     "operationMetadataId": "081334d0-66ba-42d9-aa67-9a508628def9"
+                                  },
+                                  "type": "AppendToArrayVariable",
+                                  "inputs": {
+                                    "name": "Tier1LineItems",
+                                    "value": "@outputs('Add_EstimateTierName_-_Tier_1_')"
                                   }
                                 },
                                 "Add_EstimateTierName_-_Tier_1_": {
-                                  "type": "Compose",
-                                  "inputs": "@addProperty(items('For_each_Line_Item_in_Tier_1'), 'TierName', outputs('Tier_1_Name'))",
                                   "metadata": {
                                     "operationMetadataId": "c461817e-2430-48c0-88d0-08afdc15a307"
-                                  }
+                                  },
+                                  "type": "Compose",
+                                  "inputs": "@addProperty(items('For_each_Line_Item_in_Tier_1'), 'TierName', outputs('Tier_1_Name'))"
                                 }
                               },
                               "runAfter": {
@@ -473,14 +457,10 @@
                               },
                               "metadata": {
                                 "operationMetadataId": "531525ad-0b94-41b7-b481-d5ed56f967fe"
-                              }
+                              },
+                              "type": "Foreach"
                             },
                             "Filter_Line_Items_Where_Qty_Is_Not_Zero_and_Price_Is_Not_Zero_-_Tier_1": {
-                              "type": "Query",
-                              "inputs": {
-                                "from": "@body('Select_Name,_Description,_Price_And_Quantity_For_Tier_1')",
-                                "where": "@equals(or(equals(item()?['Qty'], 0),equals(item()?['Price'], 0)),false)"
-                              },
                               "runAfter": {
                                 "Select_Name,_Description,_Price_And_Quantity_For_Tier_1": [
                                   "Succeeded"
@@ -488,6 +468,11 @@
                               },
                               "metadata": {
                                 "operationMetadataId": "c1fd4fdd-aada-4f21-bad2-68f81eb2a761"
+                              },
+                              "type": "Query",
+                              "inputs": {
+                                "from": "@body('Select_Name,_Description,_Price_And_Quantity_For_Tier_1')",
+                                "where": "@equals(or(equals(item()?['Qty'], 0),equals(item()?['Price'], 0)),false)"
                               }
                             }
                           },
@@ -498,14 +483,10 @@
                           },
                           "metadata": {
                             "operationMetadataId": "2f8b2d0c-971d-4eba-be94-eb7928df34d3"
-                          }
+                          },
+                          "type": "Foreach"
                         },
                         "Create_CSV_table_For_LineItems_For_Tier_1": {
-                          "type": "Table",
-                          "inputs": {
-                            "from": "@variables('Tier1LineItems')",
-                            "format": "CSV"
-                          },
                           "runAfter": {
                             "For_Each_EstimateSection_In_Tier_1": [
                               "Succeeded"
@@ -513,9 +494,22 @@
                           },
                           "metadata": {
                             "operationMetadataId": "86aa86cc-66de-427c-8206-080e68c6b942"
+                          },
+                          "type": "Table",
+                          "inputs": {
+                            "from": "@variables('Tier1LineItems')",
+                            "format": "CSV"
                           }
                         },
                         "Create_CSV_File_For_Tier_1_Details": {
+                          "runAfter": {
+                            "Create_CSV_table_For_LineItems_For_Tier_1": [
+                              "Succeeded"
+                            ]
+                          },
+                          "metadata": {
+                            "operationMetadataId": "b8ccd6ae-c6c8-476c-a997-4fd2af8a73f7"
+                          },
                           "type": "OpenApiConnection",
                           "inputs": {
                             "parameters": {
@@ -529,18 +523,10 @@
                               "connectionName": "shared_onedrive-1"
                             }
                           },
-                          "runAfter": {
-                            "Create_CSV_table_For_LineItems_For_Tier_1": [
-                              "Succeeded"
-                            ]
-                          },
                           "runtimeConfiguration": {
                             "contentTransfer": {
                               "transferMode": "Chunked"
                             }
-                          },
-                          "metadata": {
-                            "operationMetadataId": "b8ccd6ae-c6c8-476c-a997-4fd2af8a73f7"
                           }
                         },
                         "Log_Text_-_17": {
@@ -557,6 +543,11 @@
                           }
                         },
                         "Log_Text_-_19": {
+                          "runAfter": {
+                            "Create_CSV_File_For_Tier_1_Details": [
+                              "Succeeded"
+                            ]
+                          },
                           "type": "AppendToArrayVariable",
                           "inputs": {
                             "name": "LogText",
@@ -567,13 +558,13 @@
                               "@variables('LogTextColNames')?[3]": "Info",
                               "@variables('LogTextColNames')?[4]": "Tier1 CSV Created On OneDrive"
                             }
-                          },
-                          "runAfter": {
-                            "Create_CSV_File_For_Tier_1_Details": [
-                              "Succeeded"
-                            ]
                           }
                         }
+                      },
+                      "runAfter": {
+                        "Tier_1_Name": [
+                          "Succeeded"
+                        ]
                       },
                       "else": {
                         "actions": {
@@ -592,18 +583,22 @@
                           }
                         }
                       },
-                      "runAfter": {
-                        "Tier_1_Name": [
-                          "Succeeded"
+                      "expression": {
+                        "and": [
+                          {
+                            "equals": [
+                              "@outputs('Tier_1_JSON')?['Show']",
+                              "@true"
+                            ]
+                          }
                         ]
                       },
                       "metadata": {
                         "operationMetadataId": "d3ecf2ca-81da-440a-8df7-b493c9430f76"
-                      }
+                      },
+                      "type": "If"
                     },
                     "Tier_1_Name": {
-                      "type": "Compose",
-                      "inputs": "@outputs('Tier_1_JSON')?['Name']",
                       "runAfter": {
                         "Tier_1_JSON": [
                           "Succeeded"
@@ -611,7 +606,9 @@
                       },
                       "metadata": {
                         "operationMetadataId": "2f10345f-1220-4fdf-8702-d46a9f0bce89"
-                      }
+                      },
+                      "type": "Compose",
+                      "inputs": "@outputs('Tier_1_JSON')?['Name']"
                     },
                     "Log_Text_-_13": {
                       "type": "AppendToArrayVariable",
@@ -629,14 +626,12 @@
                   },
                   "metadata": {
                     "operationMetadataId": "cdbc64ad-a791-4856-b024-5e6fc446f907"
-                  }
+                  },
+                  "type": "Scope"
                 },
                 "Tier2_Estimate_Details": {
-                  "type": "Scope",
                   "actions": {
                     "Tier_2_JSON": {
-                      "type": "Compose",
-                      "inputs": "@variables('EstimateDetailsPage')?['Tier2']",
                       "runAfter": {
                         "Log_Text_-_14": [
                           "Succeeded"
@@ -644,26 +639,19 @@
                       },
                       "metadata": {
                         "operationMetadataId": "948790f6-f003-4a46-a8a2-22c83600a194"
-                      }
+                      },
+                      "type": "Compose",
+                      "inputs": "@variables('EstimateDetailsPage')?['Tier2']"
                     },
                     "If_Tier_2__Is_Present": {
-                      "type": "If",
-                      "expression": {
-                        "and": [
-                          {
-                            "equals": [
-                              "@outputs('Tier_2_JSON')?['Show']",
-                              "@true"
-                            ]
-                          }
-                        ]
-                      },
                       "actions": {
                         "For_Each_EstimateSection_In_Tier_2": {
-                          "type": "Foreach",
                           "foreach": "@outputs('Tier_2_JSON')?['EstimateSections']",
                           "actions": {
                             "Select_Name,_Description,_Price_And_Quantity_For_Tier_2": {
+                              "metadata": {
+                                "operationMetadataId": "e5a88854-3aa7-4e42-ab71-5bf9e38730e7"
+                              },
                               "type": "Select",
                               "inputs": {
                                 "from": "@items('For_Each_EstimateSection_In_Tier_2')?['EstimateItems']",
@@ -673,17 +661,9 @@
                                   "Price": "@item()?['Price']",
                                   "Description": "@item()?['Description']"
                                 }
-                              },
-                              "metadata": {
-                                "operationMetadataId": "e5a88854-3aa7-4e42-ab71-5bf9e38730e7"
                               }
                             },
                             "Filter_Line_Items_Where_Qty_Is_Not_Zero_and_Price_Is_Not_Zero_-_Tier_2": {
-                              "type": "Query",
-                              "inputs": {
-                                "from": "@body('Select_Name,_Description,_Price_And_Quantity_For_Tier_2')",
-                                "where": "@equals(or(equals(item()?['Qty'], 0),equals(item()?['Price'], 0)),false)"
-                              },
                               "runAfter": {
                                 "Select_Name,_Description,_Price_And_Quantity_For_Tier_2": [
                                   "Succeeded"
@@ -691,18 +671,17 @@
                               },
                               "metadata": {
                                 "operationMetadataId": "f74589c7-f853-4e16-bff7-6fc7181654de"
+                              },
+                              "type": "Query",
+                              "inputs": {
+                                "from": "@body('Select_Name,_Description,_Price_And_Quantity_For_Tier_2')",
+                                "where": "@equals(or(equals(item()?['Qty'], 0),equals(item()?['Price'], 0)),false)"
                               }
                             },
                             "For_each_Line_Item_in_Tier_2": {
-                              "type": "Foreach",
                               "foreach": "@body('Filter_Line_Items_Where_Qty_Is_Not_Zero_and_Price_Is_Not_Zero_-_Tier_2')",
                               "actions": {
                                 "Add_to_LineItems_Array_For_Tier_2": {
-                                  "type": "AppendToArrayVariable",
-                                  "inputs": {
-                                    "name": "Tier2LineItems",
-                                    "value": "@outputs('Add_EstimateTierName_-_Tier_2')"
-                                  },
                                   "runAfter": {
                                     "Add_EstimateTierName_-_Tier_2": [
                                       "Succeeded"
@@ -710,14 +689,19 @@
                                   },
                                   "metadata": {
                                     "operationMetadataId": "08c6e0d2-f5b4-467b-bf8f-2be05cd336ba"
+                                  },
+                                  "type": "AppendToArrayVariable",
+                                  "inputs": {
+                                    "name": "Tier2LineItems",
+                                    "value": "@outputs('Add_EstimateTierName_-_Tier_2')"
                                   }
                                 },
                                 "Add_EstimateTierName_-_Tier_2": {
-                                  "type": "Compose",
-                                  "inputs": "@addProperty(items('For_each_Line_Item_in_Tier_2'), 'TierName', outputs('Tier_2_Name'))",
                                   "metadata": {
                                     "operationMetadataId": "4fc80550-8df7-4b83-b411-e325ab624e9a"
-                                  }
+                                  },
+                                  "type": "Compose",
+                                  "inputs": "@addProperty(items('For_each_Line_Item_in_Tier_2'), 'TierName', outputs('Tier_2_Name'))"
                                 }
                               },
                               "runAfter": {
@@ -727,7 +711,8 @@
                               },
                               "metadata": {
                                 "operationMetadataId": "b0f02e41-11af-457f-907f-04f3e8f773be"
-                              }
+                              },
+                              "type": "Foreach"
                             }
                           },
                           "runAfter": {
@@ -737,14 +722,10 @@
                           },
                           "metadata": {
                             "operationMetadataId": "3f30cf6c-60de-4c9c-9ce6-7236f3f2576b"
-                          }
+                          },
+                          "type": "Foreach"
                         },
                         "Create_CSV_table_For_LineItems_For_Tier_2": {
-                          "type": "Table",
-                          "inputs": {
-                            "from": "@variables('Tier2LineItems')",
-                            "format": "CSV"
-                          },
                           "runAfter": {
                             "For_Each_EstimateSection_In_Tier_2": [
                               "Succeeded"
@@ -752,9 +733,22 @@
                           },
                           "metadata": {
                             "operationMetadataId": "35b33863-b4e0-4d79-9f06-4199739b5fb2"
+                          },
+                          "type": "Table",
+                          "inputs": {
+                            "from": "@variables('Tier2LineItems')",
+                            "format": "CSV"
                           }
                         },
                         "Create_CSV_File_For_Tier_2_Details": {
+                          "runAfter": {
+                            "Create_CSV_table_For_LineItems_For_Tier_2": [
+                              "Succeeded"
+                            ]
+                          },
+                          "metadata": {
+                            "operationMetadataId": "01a7580d-2cad-4034-a0ea-7f7fedbb9510"
+                          },
                           "type": "OpenApiConnection",
                           "inputs": {
                             "parameters": {
@@ -768,18 +762,10 @@
                               "connectionName": "shared_onedrive-1"
                             }
                           },
-                          "runAfter": {
-                            "Create_CSV_table_For_LineItems_For_Tier_2": [
-                              "Succeeded"
-                            ]
-                          },
                           "runtimeConfiguration": {
                             "contentTransfer": {
                               "transferMode": "Chunked"
                             }
-                          },
-                          "metadata": {
-                            "operationMetadataId": "01a7580d-2cad-4034-a0ea-7f7fedbb9510"
                           }
                         },
                         "Log_Text_-_20": {
@@ -796,6 +782,11 @@
                           }
                         },
                         "Log_Text_-_22": {
+                          "runAfter": {
+                            "Create_CSV_File_For_Tier_2_Details": [
+                              "Succeeded"
+                            ]
+                          },
                           "type": "AppendToArrayVariable",
                           "inputs": {
                             "name": "LogText",
@@ -806,13 +797,13 @@
                               "@variables('LogTextColNames')?[3]": "Info",
                               "@variables('LogTextColNames')?[4]": "Tier2 CSV Created On OneDrive"
                             }
-                          },
-                          "runAfter": {
-                            "Create_CSV_File_For_Tier_2_Details": [
-                              "Succeeded"
-                            ]
                           }
                         }
+                      },
+                      "runAfter": {
+                        "Tier_2_Name": [
+                          "Succeeded"
+                        ]
                       },
                       "else": {
                         "actions": {
@@ -831,18 +822,22 @@
                           }
                         }
                       },
-                      "runAfter": {
-                        "Tier_2_Name": [
-                          "Succeeded"
+                      "expression": {
+                        "and": [
+                          {
+                            "equals": [
+                              "@outputs('Tier_2_JSON')?['Show']",
+                              "@true"
+                            ]
+                          }
                         ]
                       },
                       "metadata": {
                         "operationMetadataId": "266d1150-42f6-4cb0-b60b-9af0b46524a6"
-                      }
+                      },
+                      "type": "If"
                     },
                     "Tier_2_Name": {
-                      "type": "Compose",
-                      "inputs": "@outputs('Tier_2_JSON')?['Name']",
                       "runAfter": {
                         "Tier_2_JSON": [
                           "Succeeded"
@@ -850,7 +845,9 @@
                       },
                       "metadata": {
                         "operationMetadataId": "879138f2-6017-4e37-b307-8d0c3d497085"
-                      }
+                      },
+                      "type": "Compose",
+                      "inputs": "@outputs('Tier_2_JSON')?['Name']"
                     },
                     "Log_Text_-_14": {
                       "type": "AppendToArrayVariable",
@@ -868,14 +865,12 @@
                   },
                   "metadata": {
                     "operationMetadataId": "6cf84cf3-7c48-4f25-9c56-76056c757d42"
-                  }
+                  },
+                  "type": "Scope"
                 },
                 "Tier3_Estimate_Details": {
-                  "type": "Scope",
                   "actions": {
                     "Tier_3_JSON": {
-                      "type": "Compose",
-                      "inputs": "@variables('EstimateDetailsPage')?['Tier3']",
                       "runAfter": {
                         "Log_Text_-_15": [
                           "Succeeded"
@@ -883,26 +878,19 @@
                       },
                       "metadata": {
                         "operationMetadataId": "e109a92a-73f5-4be9-8f97-828723da628e"
-                      }
+                      },
+                      "type": "Compose",
+                      "inputs": "@variables('EstimateDetailsPage')?['Tier3']"
                     },
                     "If_Tier_3__Is_Present": {
-                      "type": "If",
-                      "expression": {
-                        "and": [
-                          {
-                            "equals": [
-                              "@outputs('Tier_3_JSON')?['Show']",
-                              "@true"
-                            ]
-                          }
-                        ]
-                      },
                       "actions": {
                         "For_Each_EstimateSection_In_Tier_3": {
-                          "type": "Foreach",
                           "foreach": "@outputs('Tier_3_JSON')?['EstimateSections']",
                           "actions": {
                             "Select_Name,_Description,_Price_And_Quantity_For_Tier_3": {
+                              "metadata": {
+                                "operationMetadataId": "21e02f04-39b3-4ec2-add0-392b9ff4c5ec"
+                              },
                               "type": "Select",
                               "inputs": {
                                 "from": "@items('For_Each_EstimateSection_In_Tier_3')?['EstimateItems']",
@@ -912,17 +900,9 @@
                                   "Price": "@item()?['Price']",
                                   "Description": "@item()?['Description']"
                                 }
-                              },
-                              "metadata": {
-                                "operationMetadataId": "21e02f04-39b3-4ec2-add0-392b9ff4c5ec"
                               }
                             },
                             "Filter_Line_Items_Where_Qty_Is_Not_Zero_and_Price_Is_Not_Zero_-_Tier_3": {
-                              "type": "Query",
-                              "inputs": {
-                                "from": "@body('Select_Name,_Description,_Price_And_Quantity_For_Tier_3')",
-                                "where": "@equals(or(equals(item()?['Qty'], 0),equals(item()?['Price'], 0)),false)"
-                              },
                               "runAfter": {
                                 "Select_Name,_Description,_Price_And_Quantity_For_Tier_3": [
                                   "Succeeded"
@@ -930,18 +910,17 @@
                               },
                               "metadata": {
                                 "operationMetadataId": "b15deb2f-aefa-4af6-925e-4b638c972e4b"
+                              },
+                              "type": "Query",
+                              "inputs": {
+                                "from": "@body('Select_Name,_Description,_Price_And_Quantity_For_Tier_3')",
+                                "where": "@equals(or(equals(item()?['Qty'], 0),equals(item()?['Price'], 0)),false)"
                               }
                             },
                             "For_each_Line_Item_in_Tier_3": {
-                              "type": "Foreach",
                               "foreach": "@body('Filter_Line_Items_Where_Qty_Is_Not_Zero_and_Price_Is_Not_Zero_-_Tier_3')",
                               "actions": {
                                 "Add_to_LineItems_Array_For_Tier_3": {
-                                  "type": "AppendToArrayVariable",
-                                  "inputs": {
-                                    "name": "Tier3LineItems",
-                                    "value": "@outputs('Add_EstimateTierName_-_Tier_3')"
-                                  },
                                   "runAfter": {
                                     "Add_EstimateTierName_-_Tier_3": [
                                       "Succeeded"
@@ -949,14 +928,19 @@
                                   },
                                   "metadata": {
                                     "operationMetadataId": "f07e843d-7761-4f39-a19e-16922b8116f7"
+                                  },
+                                  "type": "AppendToArrayVariable",
+                                  "inputs": {
+                                    "name": "Tier3LineItems",
+                                    "value": "@outputs('Add_EstimateTierName_-_Tier_3')"
                                   }
                                 },
                                 "Add_EstimateTierName_-_Tier_3": {
-                                  "type": "Compose",
-                                  "inputs": "@addProperty(items('For_each_Line_Item_in_Tier_3'), 'TierName', outputs('Tier_3_Name'))",
                                   "metadata": {
                                     "operationMetadataId": "c5065295-d3bf-490b-95bb-d96fbeb32847"
-                                  }
+                                  },
+                                  "type": "Compose",
+                                  "inputs": "@addProperty(items('For_each_Line_Item_in_Tier_3'), 'TierName', outputs('Tier_3_Name'))"
                                 }
                               },
                               "runAfter": {
@@ -966,7 +950,8 @@
                               },
                               "metadata": {
                                 "operationMetadataId": "627117db-25cb-4e5f-b81c-55aff822f7d2"
-                              }
+                              },
+                              "type": "Foreach"
                             }
                           },
                           "runAfter": {
@@ -976,14 +961,10 @@
                           },
                           "metadata": {
                             "operationMetadataId": "9c77ec71-7418-46cf-8a04-6a3e888f2820"
-                          }
+                          },
+                          "type": "Foreach"
                         },
                         "Create_CSV_table_For_LineItems_For_Tier_3": {
-                          "type": "Table",
-                          "inputs": {
-                            "from": "@variables('Tier3LineItems')",
-                            "format": "CSV"
-                          },
                           "runAfter": {
                             "For_Each_EstimateSection_In_Tier_3": [
                               "Succeeded"
@@ -991,9 +972,22 @@
                           },
                           "metadata": {
                             "operationMetadataId": "be9c97a3-d746-4381-8eb7-ff4fd20af76d"
+                          },
+                          "type": "Table",
+                          "inputs": {
+                            "from": "@variables('Tier3LineItems')",
+                            "format": "CSV"
                           }
                         },
                         "Create_CSV_File_For_Tier_3_Details": {
+                          "runAfter": {
+                            "Create_CSV_table_For_LineItems_For_Tier_3": [
+                              "Succeeded"
+                            ]
+                          },
+                          "metadata": {
+                            "operationMetadataId": "8bba251a-7c42-4375-8184-a095c4443a17"
+                          },
                           "type": "OpenApiConnection",
                           "inputs": {
                             "parameters": {
@@ -1007,18 +1001,10 @@
                               "connectionName": "shared_onedrive-1"
                             }
                           },
-                          "runAfter": {
-                            "Create_CSV_table_For_LineItems_For_Tier_3": [
-                              "Succeeded"
-                            ]
-                          },
                           "runtimeConfiguration": {
                             "contentTransfer": {
                               "transferMode": "Chunked"
                             }
-                          },
-                          "metadata": {
-                            "operationMetadataId": "8bba251a-7c42-4375-8184-a095c4443a17"
                           }
                         },
                         "Log_Text_-_23": {
@@ -1035,6 +1021,11 @@
                           }
                         },
                         "Log_Text_-_25": {
+                          "runAfter": {
+                            "Create_CSV_File_For_Tier_3_Details": [
+                              "Succeeded"
+                            ]
+                          },
                           "type": "AppendToArrayVariable",
                           "inputs": {
                             "name": "LogText",
@@ -1045,13 +1036,13 @@
                               "@variables('LogTextColNames')?[3]": "Info",
                               "@variables('LogTextColNames')?[4]": "Tier3 CSV Created On OneDrive"
                             }
-                          },
-                          "runAfter": {
-                            "Create_CSV_File_For_Tier_3_Details": [
-                              "Succeeded"
-                            ]
                           }
                         }
+                      },
+                      "runAfter": {
+                        "Tier_3_Name": [
+                          "Succeeded"
+                        ]
                       },
                       "else": {
                         "actions": {
@@ -1070,18 +1061,22 @@
                           }
                         }
                       },
-                      "runAfter": {
-                        "Tier_3_Name": [
-                          "Succeeded"
+                      "expression": {
+                        "and": [
+                          {
+                            "equals": [
+                              "@outputs('Tier_3_JSON')?['Show']",
+                              "@true"
+                            ]
+                          }
                         ]
                       },
                       "metadata": {
                         "operationMetadataId": "b3cec585-7f1c-4f26-9289-454bbd12ed6c"
-                      }
+                      },
+                      "type": "If"
                     },
                     "Tier_3_Name": {
-                      "type": "Compose",
-                      "inputs": "@outputs('Tier_3_JSON')?['Name']",
                       "runAfter": {
                         "Tier_3_JSON": [
                           "Succeeded"
@@ -1089,7 +1084,9 @@
                       },
                       "metadata": {
                         "operationMetadataId": "dc475688-384c-4b28-902f-19a895273815"
-                      }
+                      },
+                      "type": "Compose",
+                      "inputs": "@outputs('Tier_3_JSON')?['Name']"
                     },
                     "Log_Text_-_15": {
                       "type": "AppendToArrayVariable",
@@ -1107,22 +1104,21 @@
                   },
                   "metadata": {
                     "operationMetadataId": "f2da881c-29a7-44c2-a021-c989e2080418"
-                  }
+                  },
+                  "type": "Scope"
                 },
                 "Additional_Options_Details": {
-                  "type": "Scope",
                   "actions": {
                     "Additional_Options_JSON": {
-                      "type": "Compose",
-                      "inputs": "@outputs('Parse_The_Report_Details')?['AuthorizationPage']?['AuthorizationSections']",
                       "runAfter": {
                         "Log_Text_-_16": [
                           "Succeeded"
                         ]
-                      }
+                      },
+                      "type": "Compose",
+                      "inputs": "@outputs('Parse_The_Report_Details')?['AuthorizationPage']?['AuthorizationSections']"
                     },
                     "For_Each_Section_In_Authorization_Page": {
-                      "type": "Foreach",
                       "foreach": "@outputs('Additional_Options_JSON')",
                       "actions": {
                         "Select_Name,_Description,_Price_And_Quantity_For_AddOpt": {
@@ -1138,22 +1134,16 @@
                           }
                         },
                         "For_Each_Line_Item_in_AdditOpt": {
-                          "type": "Foreach",
                           "foreach": "@body('Select_Name,_Description,_Price_And_Quantity_For_AddOpt')",
                           "actions": {
                             "Add_AdditOpt_Name_-_AddOpt": {
-                              "type": "Compose",
-                              "inputs": "@addProperty(items('For_Each_Line_Item_in_AdditOpt'), 'TierName', 'Additional Options')",
                               "metadata": {
                                 "operationMetadataId": "c5065295-d3bf-490b-95bb-d96fbeb32847"
-                              }
+                              },
+                              "type": "Compose",
+                              "inputs": "@addProperty(items('For_Each_Line_Item_in_AdditOpt'), 'TierName', 'Additional Options')"
                             },
                             "Add_to_LineItems_Array_For_AdditOpt": {
-                              "type": "AppendToArrayVariable",
-                              "inputs": {
-                                "name": "AdditionalOpt",
-                                "value": "@outputs('Add_AdditOpt_Name_-_AddOpt')"
-                              },
                               "runAfter": {
                                 "Add_AdditOpt_Name_-_AddOpt": [
                                   "Succeeded"
@@ -1161,6 +1151,11 @@
                               },
                               "metadata": {
                                 "operationMetadataId": "f07e843d-7761-4f39-a19e-16922b8116f7"
+                              },
+                              "type": "AppendToArrayVariable",
+                              "inputs": {
+                                "name": "AdditionalOpt",
+                                "value": "@outputs('Add_AdditOpt_Name_-_AddOpt')"
                               }
                             }
                           },
@@ -1168,28 +1163,38 @@
                             "Select_Name,_Description,_Price_And_Quantity_For_AddOpt": [
                               "Succeeded"
                             ]
-                          }
+                          },
+                          "type": "Foreach"
                         }
                       },
                       "runAfter": {
                         "Additional_Options_JSON": [
                           "Succeeded"
                         ]
-                      }
+                      },
+                      "type": "Foreach"
                     },
                     "Create_CSV_table_for_Line_Items_For_AdditOpt": {
-                      "type": "Table",
-                      "inputs": {
-                        "from": "@variables('AdditionalOpt')",
-                        "format": "CSV"
-                      },
                       "runAfter": {
                         "For_Each_Section_In_Authorization_Page": [
                           "Succeeded"
                         ]
+                      },
+                      "type": "Table",
+                      "inputs": {
+                        "from": "@variables('AdditionalOpt')",
+                        "format": "CSV"
                       }
                     },
                     "Create_CSV_File_For_AdditOpts": {
+                      "runAfter": {
+                        "Create_CSV_table_for_Line_Items_For_AdditOpt": [
+                          "Succeeded"
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "8bba251a-7c42-4375-8184-a095c4443a17"
+                      },
                       "type": "OpenApiConnection",
                       "inputs": {
                         "parameters": {
@@ -1203,18 +1208,10 @@
                           "connectionName": "shared_onedrive-1"
                         }
                       },
-                      "runAfter": {
-                        "Create_CSV_table_for_Line_Items_For_AdditOpt": [
-                          "Succeeded"
-                        ]
-                      },
                       "runtimeConfiguration": {
                         "contentTransfer": {
                           "transferMode": "Chunked"
                         }
-                      },
-                      "metadata": {
-                        "operationMetadataId": "8bba251a-7c42-4375-8184-a095c4443a17"
                       }
                     },
                     "Log_Text_-_16": {
@@ -1231,6 +1228,11 @@
                       }
                     },
                     "Log_Text_-_26": {
+                      "runAfter": {
+                        "Create_CSV_File_For_AdditOpts": [
+                          "Succeeded"
+                        ]
+                      },
                       "type": "AppendToArrayVariable",
                       "inputs": {
                         "name": "LogText",
@@ -1241,34 +1243,36 @@
                           "@variables('LogTextColNames')?[3]": "Info",
                           "@variables('LogTextColNames')?[4]": "AdditOpt CSV Created On OneDrive"
                         }
-                      },
-                      "runAfter": {
-                        "Create_CSV_File_For_AdditOpts": [
-                          "Succeeded"
-                        ]
                       }
                     }
-                  }
+                  },
+                  "type": "Scope"
                 }
               },
               "metadata": {
                 "operationMetadataId": "d8bbb063-84dc-4596-85c5-0f842bcee6db"
-              }
+              },
+              "type": "Scope"
             },
             "Get_Failed_Action_Details_-_1": {
-              "type": "Query",
-              "inputs": {
-                "from": "@result('Get_Inspection_Images_and_upload_to_Drive')",
-                "where": "@equals(equals(item()?['status'], 'Failed'),true)"
-              },
               "runAfter": {
                 "Get_Inspection_Images_and_upload_to_Drive": [
                   "Failed",
                   "TimedOut"
                 ]
+              },
+              "type": "Query",
+              "inputs": {
+                "from": "@result('Get_Inspection_Images_and_upload_to_Drive')",
+                "where": "@equals(equals(item()?['status'], 'Failed'),true)"
               }
             },
             "Send_Email_-_Support_-_Failed_Image_upload_actions": {
+              "runAfter": {
+                "Create_file_LogText_on_OneDrive-1": [
+                  "Succeeded"
+                ]
+              },
               "type": "Http",
               "inputs": {
                 "uri": "@body('Get_config_Data')?['EmailTriggerURL']",
@@ -1286,11 +1290,6 @@
                   "clientEmailContent": {}
                 }
               },
-              "runAfter": {
-                "Create_file_LogText_on_OneDrive-1": [
-                  "Succeeded"
-                ]
-              },
               "runtimeConfiguration": {
                 "contentTransfer": {
                   "transferMode": "Chunked"
@@ -1298,19 +1297,24 @@
               }
             },
             "Get_Failed_Action_Details_-_2": {
-              "type": "Query",
-              "inputs": {
-                "from": "@result('Get_Report_PDF')",
-                "where": "@equals(equals(item()?['status'], 'Failed'),true)"
-              },
               "runAfter": {
                 "Get_Report_PDF": [
                   "TimedOut",
                   "Failed"
                 ]
+              },
+              "type": "Query",
+              "inputs": {
+                "from": "@result('Get_Report_PDF')",
+                "where": "@equals(equals(item()?['status'], 'Failed'),true)"
               }
             },
             "Send_Email_-_Support_-_Failed_Report_PDF_download": {
+              "runAfter": {
+                "Create_file_LogText_on_OneDrive-2": [
+                  "Succeeded"
+                ]
+              },
               "type": "Http",
               "inputs": {
                 "uri": "@body('Get_config_Data')?['EmailTriggerURL']",
@@ -1328,11 +1332,6 @@
                   "clientEmailContent": {}
                 }
               },
-              "runAfter": {
-                "Create_file_LogText_on_OneDrive-2": [
-                  "Succeeded"
-                ]
-              },
               "runtimeConfiguration": {
                 "contentTransfer": {
                   "transferMode": "Chunked"
@@ -1340,19 +1339,24 @@
               }
             },
             "Get_Failed_Action_Details_-_3": {
-              "type": "Query",
-              "inputs": {
-                "from": "@result('Get_Quote_Details')",
-                "where": "@equals(equals(item()?['status'], 'Failed'),true)"
-              },
               "runAfter": {
                 "Get_Quote_Details": [
                   "TimedOut",
                   "Failed"
                 ]
+              },
+              "type": "Query",
+              "inputs": {
+                "from": "@result('Get_Quote_Details')",
+                "where": "@equals(equals(item()?['status'], 'Failed'),true)"
               }
             },
             "Send_Email_-_Support_-_Failed_to_store_QuoteOptions_Details": {
+              "runAfter": {
+                "Create_file_LogText_on_OneDrive-3": [
+                  "Succeeded"
+                ]
+              },
               "type": "Http",
               "inputs": {
                 "uri": "@body('Get_config_Data')?['EmailTriggerURL']",
@@ -1370,11 +1374,6 @@
                   "clientEmailContent": {}
                 }
               },
-              "runAfter": {
-                "Create_file_LogText_on_OneDrive-3": [
-                  "Succeeded"
-                ]
-              },
               "runtimeConfiguration": {
                 "contentTransfer": {
                   "transferMode": "Chunked"
@@ -1382,6 +1381,11 @@
               }
             },
             "Create_file_LogText_on_OneDrive-1": {
+              "runAfter": {
+                "Create_CSV_table-1": [
+                  "Succeeded"
+                ]
+              },
               "type": "OpenApiConnection",
               "inputs": {
                 "parameters": {
@@ -1395,11 +1399,6 @@
                   "connectionName": "shared_onedrive-1"
                 }
               },
-              "runAfter": {
-                "Create_CSV_table-1": [
-                  "Succeeded"
-                ]
-              },
               "runtimeConfiguration": {
                 "contentTransfer": {
                   "transferMode": "Chunked"
@@ -1407,18 +1406,23 @@
               }
             },
             "Create_CSV_table-1": {
-              "type": "Table",
-              "inputs": {
-                "from": "@variables('LogText')",
-                "format": "CSV"
-              },
               "runAfter": {
                 "Log_Text_-_33": [
                   "Succeeded"
                 ]
+              },
+              "type": "Table",
+              "inputs": {
+                "from": "@variables('LogText')",
+                "format": "CSV"
               }
             },
             "Log_Text_-_33": {
+              "runAfter": {
+                "Get_Failed_Action_Details_-_1": [
+                  "Succeeded"
+                ]
+              },
               "type": "AppendToArrayVariable",
               "inputs": {
                 "name": "LogText",
@@ -1429,14 +1433,14 @@
                   "@variables('LogTextColNames')?[3]": "Error",
                   "@variables('LogTextColNames')?[4]": "@{body('Get_Failed_Action_Details_-_1')?[0]?['error']?['message']}"
                 }
-              },
-              "runAfter": {
-                "Get_Failed_Action_Details_-_1": [
-                  "Succeeded"
-                ]
               }
             },
             "Log_Text_-_34": {
+              "runAfter": {
+                "Get_Failed_Action_Details_-_2": [
+                  "Succeeded"
+                ]
+              },
               "type": "AppendToArrayVariable",
               "inputs": {
                 "name": "LogText",
@@ -1447,26 +1451,26 @@
                   "@variables('LogTextColNames')?[3]": "Error",
                   "@variables('LogTextColNames')?[4]": "@{body('Get_Failed_Action_Details_-_2')?[0]?['error']?['message']}"
                 }
-              },
-              "runAfter": {
-                "Get_Failed_Action_Details_-_2": [
-                  "Succeeded"
-                ]
               }
             },
             "Create_CSV_table-2": {
-              "type": "Table",
-              "inputs": {
-                "from": "@variables('LogText')",
-                "format": "CSV"
-              },
               "runAfter": {
                 "Log_Text_-_34": [
                   "Succeeded"
                 ]
+              },
+              "type": "Table",
+              "inputs": {
+                "from": "@variables('LogText')",
+                "format": "CSV"
               }
             },
             "Create_file_LogText_on_OneDrive-2": {
+              "runAfter": {
+                "Create_CSV_table-2": [
+                  "Succeeded"
+                ]
+              },
               "type": "OpenApiConnection",
               "inputs": {
                 "parameters": {
@@ -1480,11 +1484,6 @@
                   "connectionName": "shared_onedrive-1"
                 }
               },
-              "runAfter": {
-                "Create_CSV_table-2": [
-                  "Succeeded"
-                ]
-              },
               "runtimeConfiguration": {
                 "contentTransfer": {
                   "transferMode": "Chunked"
@@ -1492,6 +1491,11 @@
               }
             },
             "Log_Text_-_35": {
+              "runAfter": {
+                "Get_Failed_Action_Details_-_3": [
+                  "Succeeded"
+                ]
+              },
               "type": "AppendToArrayVariable",
               "inputs": {
                 "name": "LogText",
@@ -1502,26 +1506,26 @@
                   "@variables('LogTextColNames')?[3]": "Error",
                   "@variables('LogTextColNames')?[4]": "@{body('Get_Failed_Action_Details_-_3')?[0]?['error']?['message']}"
                 }
-              },
-              "runAfter": {
-                "Get_Failed_Action_Details_-_3": [
-                  "Succeeded"
-                ]
               }
             },
             "Create_CSV_table-3": {
-              "type": "Table",
-              "inputs": {
-                "from": "@variables('LogText')",
-                "format": "CSV"
-              },
               "runAfter": {
                 "Log_Text_-_35": [
                   "Succeeded"
                 ]
+              },
+              "type": "Table",
+              "inputs": {
+                "from": "@variables('LogText')",
+                "format": "CSV"
               }
             },
             "Create_file_LogText_on_OneDrive-3": {
+              "runAfter": {
+                "Create_CSV_table-3": [
+                  "Succeeded"
+                ]
+              },
               "type": "OpenApiConnection",
               "inputs": {
                 "parameters": {
@@ -1534,11 +1538,6 @@
                   "operationId": "CreateFile",
                   "connectionName": "shared_onedrive-1"
                 }
-              },
-              "runAfter": {
-                "Create_CSV_table-3": [
-                  "Succeeded"
-                ]
               },
               "runtimeConfiguration": {
                 "contentTransfer": {
@@ -1554,9 +1553,18 @@
           },
           "metadata": {
             "operationMetadataId": "6fa65c0f-cbe1-44e3-a219-070a2c72dae0"
-          }
+          },
+          "type": "Scope"
         },
         "Variable_for_storing_All_Listed_Line_Items_under_Tier_1": {
+          "runAfter": {
+            "Variable_For_Current_Estimate_Tier_Number": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "d1f09b0e-ade4-4af0-a0bc-68e778b1798d"
+          },
           "type": "InitializeVariable",
           "inputs": {
             "variables": [
@@ -1565,17 +1573,17 @@
                 "type": "array"
               }
             ]
-          },
+          }
+        },
+        "Variable_for_storing_All_Listed_Line_Items_under_Tier_2": {
           "runAfter": {
-            "Variable_For_Current_Estimate_Tier_Number": [
+            "Variable_for_storing_All_Listed_Line_Items_under_Tier_1": [
               "Succeeded"
             ]
           },
           "metadata": {
-            "operationMetadataId": "d1f09b0e-ade4-4af0-a0bc-68e778b1798d"
-          }
-        },
-        "Variable_for_storing_All_Listed_Line_Items_under_Tier_2": {
+            "operationMetadataId": "43a8397d-c00b-4672-b7a1-108ee852e7dd"
+          },
           "type": "InitializeVariable",
           "inputs": {
             "variables": [
@@ -1584,17 +1592,17 @@
                 "type": "array"
               }
             ]
-          },
+          }
+        },
+        "Variable_for_storing_All_Listed_Line_Items_under_Tier_3": {
           "runAfter": {
-            "Variable_for_storing_All_Listed_Line_Items_under_Tier_1": [
+            "Variable_for_storing_All_Listed_Line_Items_under_Tier_2": [
               "Succeeded"
             ]
           },
           "metadata": {
-            "operationMetadataId": "43a8397d-c00b-4672-b7a1-108ee852e7dd"
-          }
-        },
-        "Variable_for_storing_All_Listed_Line_Items_under_Tier_3": {
+            "operationMetadataId": "2ff9a1f0-dc94-40bf-959a-e82d7874a320"
+          },
           "type": "InitializeVariable",
           "inputs": {
             "variables": [
@@ -1603,17 +1611,14 @@
                 "type": "array"
               }
             ]
-          },
-          "runAfter": {
-            "Variable_for_storing_All_Listed_Line_Items_under_Tier_2": [
-              "Succeeded"
-            ]
-          },
-          "metadata": {
-            "operationMetadataId": "2ff9a1f0-dc94-40bf-959a-e82d7874a320"
           }
         },
         "Variable_for_storing_CurrentImageNo": {
+          "runAfter": {
+            "Variable_for_storing_All_Listed_Line_Items_under_AdditOpts": [
+              "Succeeded"
+            ]
+          },
           "type": "InitializeVariable",
           "inputs": {
             "variables": [
@@ -1623,14 +1628,14 @@
                 "value": 1
               }
             ]
-          },
-          "runAfter": {
-            "Variable_for_storing_All_Listed_Line_Items_under_AdditOpts": [
-              "Succeeded"
-            ]
           }
         },
         "Initialize_variable_ImagesIdList": {
+          "runAfter": {
+            "Variable_for_storing_CurrentImageNo": [
+              "Succeeded"
+            ]
+          },
           "type": "InitializeVariable",
           "inputs": {
             "variables": [
@@ -1639,14 +1644,14 @@
                 "type": "array"
               }
             ]
-          },
-          "runAfter": {
-            "Variable_for_storing_CurrentImageNo": [
-              "Succeeded"
-            ]
           }
         },
         "Initialize_variable_ReportURL": {
+          "runAfter": {
+            "Initialize_variable_ImagesIdList": [
+              "Succeeded"
+            ]
+          },
           "type": "InitializeVariable",
           "inputs": {
             "variables": [
@@ -1655,14 +1660,17 @@
                 "type": "string"
               }
             ]
-          },
-          "runAfter": {
-            "Initialize_variable_ImagesIdList": [
-              "Succeeded"
-            ]
           }
         },
         "Variable_for_storing_All_Listed_Line_Items_under_AdditOpts": {
+          "runAfter": {
+            "Variable_for_storing_All_Listed_Line_Items_under_Tier_3": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "43a8397d-c00b-4672-b7a1-108ee852e7dd"
+          },
           "type": "InitializeVariable",
           "inputs": {
             "variables": [
@@ -1671,17 +1679,14 @@
                 "type": "array"
               }
             ]
-          },
-          "runAfter": {
-            "Variable_for_storing_All_Listed_Line_Items_under_Tier_3": [
-              "Succeeded"
-            ]
-          },
-          "metadata": {
-            "operationMetadataId": "43a8397d-c00b-4672-b7a1-108ee852e7dd"
           }
         },
         "Initialize_variable_IsUpdate": {
+          "runAfter": {
+            "Initialize_variable_ReportURL": [
+              "Succeeded"
+            ]
+          },
           "type": "InitializeVariable",
           "inputs": {
             "variables": [
@@ -1691,17 +1696,16 @@
                 "value": false
               }
             ]
-          },
-          "runAfter": {
-            "Initialize_variable_ReportURL": [
-              "Succeeded"
-            ]
           }
         },
         "Call_Desktop_Flow": {
-          "type": "Scope",
           "actions": {
             "Run_a_flow_built_with_Power_Automate_for_desktop": {
+              "runAfter": {
+                "Log_Text_-_36": [
+                  "Succeeded"
+                ]
+              },
               "type": "OpenApiConnection",
               "inputs": {
                 "parameters": {
@@ -1723,11 +1727,6 @@
                   "connectionName": "shared_uiflow-1"
                 }
               },
-              "runAfter": {
-                "Log_Text_-_36": [
-                  "Succeeded"
-                ]
-              },
               "runtimeConfiguration": {
                 "secureData": {
                   "properties": [
@@ -1738,19 +1737,16 @@
               }
             },
             "If_Status_is_Non-Empty": {
-              "type": "If",
-              "expression": {
-                "and": [
-                  {
-                    "equals": [
-                      "@empty(body('Run_a_flow_built_with_Power_Automate_for_desktop')?['Status'])",
-                      "@false"
-                    ]
-                  }
-                ]
-              },
               "actions": {
                 "Update__Status_For_CurrentEstimateNo": {
+                  "runAfter": {
+                    "Log_Text_-_38": [
+                      "Succeeded"
+                    ]
+                  },
+                  "metadata": {
+                    "E550BD3B3E47E33!109": "/Estimates/FetchedEstimateDetails.xlsx"
+                  },
                   "type": "OpenApiConnection",
                   "inputs": {
                     "parameters": {
@@ -1766,11 +1762,6 @@
                       "connectionName": "shared_excelonline-1"
                     }
                   },
-                  "runAfter": {
-                    "Log_Text_-_38": [
-                      "Succeeded"
-                    ]
-                  },
                   "runtimeConfiguration": {
                     "secureData": {
                       "properties": [
@@ -1778,9 +1769,6 @@
                         "outputs"
                       ]
                     }
-                  },
-                  "metadata": {
-                    "E550BD3B3E47E33!109": "/Estimates/FetchedEstimateDetails.xlsx"
                   }
                 },
                 "Log_Text_-_38": {
@@ -1797,6 +1785,11 @@
                   }
                 },
                 "Log_Text_-_39": {
+                  "runAfter": {
+                    "Update__Status_For_CurrentEstimateNo": [
+                      "Succeeded"
+                    ]
+                  },
                   "type": "AppendToArrayVariable",
                   "inputs": {
                     "name": "LogText",
@@ -1807,13 +1800,13 @@
                       "@variables('LogTextColNames')?[3]": "Info",
                       "@variables('LogTextColNames')?[4]": "Updating Estimate Status in Excel - SNTREPUPDT - Update Successfull"
                     }
-                  },
-                  "runAfter": {
-                    "Update__Status_For_CurrentEstimateNo": [
-                      "Succeeded"
-                    ]
                   }
                 }
+              },
+              "runAfter": {
+                "Log_Text_-_37": [
+                  "Succeeded"
+                ]
               },
               "else": {
                 "actions": {
@@ -1828,13 +1821,25 @@
                   }
                 }
               },
-              "runAfter": {
-                "Log_Text_-_37": [
-                  "Succeeded"
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@empty(body('Run_a_flow_built_with_Power_Automate_for_desktop')?['Status'])",
+                      "@false"
+                    ]
+                  }
                 ]
-              }
+              },
+              "type": "If"
             },
             "Send_Email_-_Support_-_Error_In_Desktop_Flow_Run": {
+              "runAfter": {
+                "Run_a_flow_built_with_Power_Automate_for_desktop": [
+                  "TimedOut",
+                  "Failed"
+                ]
+              },
               "type": "Http",
               "inputs": {
                 "uri": "@body('Get_config_Data')?['EmailTriggerURL']",
@@ -1851,12 +1856,6 @@
                   },
                   "clientEmailContent": {}
                 }
-              },
-              "runAfter": {
-                "Run_a_flow_built_with_Power_Automate_for_desktop": [
-                  "TimedOut",
-                  "Failed"
-                ]
               },
               "runtimeConfiguration": {
                 "contentTransfer": {
@@ -1878,6 +1877,11 @@
               }
             },
             "Log_Text_-_37": {
+              "runAfter": {
+                "Run_a_flow_built_with_Power_Automate_for_desktop": [
+                  "Succeeded"
+                ]
+              },
               "type": "AppendToArrayVariable",
               "inputs": {
                 "name": "LogText",
@@ -1888,11 +1892,6 @@
                   "@variables('LogTextColNames')?[3]": "Info",
                   "@variables('LogTextColNames')?[4]": "Desktop Flow Run Completed"
                 }
-              },
-              "runAfter": {
-                "Run_a_flow_built_with_Power_Automate_for_desktop": [
-                  "Succeeded"
-                ]
               }
             }
           },
@@ -1900,9 +1899,15 @@
             "Create_file_LogText_on_OneDrive": [
               "Succeeded"
             ]
-          }
+          },
+          "type": "Scope"
         },
         "Initialize_variable_CurrentReptVer": {
+          "runAfter": {
+            "Initialize_variable_IsUpdate": [
+              "Succeeded"
+            ]
+          },
           "type": "InitializeVariable",
           "inputs": {
             "variables": [
@@ -1912,14 +1917,17 @@
                 "value": 1
               }
             ]
-          },
-          "runAfter": {
-            "Initialize_variable_IsUpdate": [
-              "Succeeded"
-            ]
           }
         },
         "Get_config_Data": {
+          "runAfter": {
+            "Log_Text_-_1": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "E550BD3B3E47E33!118": "/Config/ConfigMain.xlsx"
+          },
           "type": "OpenApiConnection",
           "inputs": {
             "parameters": {
@@ -1934,11 +1942,6 @@
               "connectionName": "shared_excelonline-1"
             }
           },
-          "runAfter": {
-            "Log_Text_-_1": [
-              "Succeeded"
-            ]
-          },
           "runtimeConfiguration": {
             "secureData": {
               "properties": [
@@ -1946,45 +1949,13 @@
                 "outputs"
               ]
             }
-          },
-          "metadata": {
-            "E550BD3B3E47E33!118": "/Config/ConfigMain.xlsx"
           }
         },
         "Debug_Mode_Check": {
-          "type": "Scope",
           "actions": {
             "If_Debug_Mode_is_Active": {
-              "type": "If",
-              "expression": {
-                "and": [
-                  {
-                    "equals": [
-                      "@int(body('Get_config_Data')?['DebugMode'])",
-                      1
-                    ]
-                  }
-                ]
-              },
               "actions": {
                 "Condition_For_Name_Check": {
-                  "type": "If",
-                  "expression": {
-                    "and": [
-                      {
-                        "equals": [
-                          "@trim(toLower(triggerBody()?['TitleReportPage']?['CustomerFirstName']))",
-                          "@trim(toLower(body('Get_Config_Data')?['FirstName']))"
-                        ]
-                      },
-                      {
-                        "equals": [
-                          "@trim(toLower(triggerBody()?['TitleReportPage']?['CustomerLastName']))",
-                          "@trim(toLower(body('Get_Config_Data')?['LastName']))"
-                        ]
-                      }
-                    ]
-                  },
                   "actions": {
                     "Log_Text_-_5": {
                       "type": "AppendToArrayVariable",
@@ -2000,17 +1971,22 @@
                       }
                     }
                   },
+                  "runAfter": {
+                    "Log_Text_-_3": [
+                      "Succeeded"
+                    ]
+                  },
                   "else": {
                     "actions": {
                       "Terminate_and_cancel_the_flow_run": {
-                        "type": "Terminate",
-                        "inputs": {
-                          "runStatus": "Cancelled"
-                        },
                         "runAfter": {
                           "Log_Text_-_6": [
                             "Succeeded"
                           ]
+                        },
+                        "type": "Terminate",
+                        "inputs": {
+                          "runStatus": "Cancelled"
                         }
                       },
                       "Log_Text_-_6": {
@@ -2027,6 +2003,11 @@
                         }
                       },
                       "Log_Text_-_7": {
+                        "runAfter": {
+                          "Terminate_and_cancel_the_flow_run": [
+                            "Succeeded"
+                          ]
+                        },
                         "type": "AppendToArrayVariable",
                         "inputs": {
                           "name": "LogText",
@@ -2037,20 +2018,27 @@
                             "@variables('LogTextColNames')?[3]": "Info",
                             "@variables('LogTextColNames')?[4]": "Flow Terminated with status Cancelled. Debug Condition Failed for Name Check"
                           }
-                        },
-                        "runAfter": {
-                          "Terminate_and_cancel_the_flow_run": [
-                            "Succeeded"
-                          ]
                         }
                       }
                     }
                   },
-                  "runAfter": {
-                    "Log_Text_-_3": [
-                      "Succeeded"
+                  "expression": {
+                    "and": [
+                      {
+                        "equals": [
+                          "@trim(toLower(triggerBody()?['TitleReportPage']?['CustomerFirstName']))",
+                          "@trim(toLower(body('Get_Config_Data')?['FirstName']))"
+                        ]
+                      },
+                      {
+                        "equals": [
+                          "@trim(toLower(triggerBody()?['TitleReportPage']?['CustomerLastName']))",
+                          "@trim(toLower(body('Get_Config_Data')?['LastName']))"
+                        ]
+                      }
                     ]
-                  }
+                  },
+                  "type": "If"
                 },
                 "Log_Text_-_3": {
                   "type": "AppendToArrayVariable",
@@ -2082,16 +2070,33 @@
                     }
                   }
                 }
-              }
+              },
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@int(body('Get_config_Data')?['DebugMode'])",
+                      1
+                    ]
+                  }
+                ]
+              },
+              "type": "If"
             }
           },
           "runAfter": {
             "Log_Text_-_2": [
               "Succeeded"
             ]
-          }
+          },
+          "type": "Scope"
         },
         "Initialize_variable_LogTextColNames": {
+          "runAfter": {
+            "Initialize_variable_LogFilePath": [
+              "Succeeded"
+            ]
+          },
           "type": "InitializeVariable",
           "inputs": {
             "variables": [
@@ -2107,14 +2112,14 @@
                 ]
               }
             ]
-          },
-          "runAfter": {
-            "Initialize_variable_LogFilePath": [
-              "Succeeded"
-            ]
           }
         },
         "Initialize_variable_LogText": {
+          "runAfter": {
+            "Initialize_variable_LogTextColNames": [
+              "Succeeded"
+            ]
+          },
           "type": "InitializeVariable",
           "inputs": {
             "variables": [
@@ -2123,14 +2128,14 @@
                 "type": "array"
               }
             ]
-          },
-          "runAfter": {
-            "Initialize_variable_LogTextColNames": [
-              "Succeeded"
-            ]
           }
         },
         "Log_Started": {
+          "runAfter": {
+            "Initialize_variable_LogText": [
+              "Succeeded"
+            ]
+          },
           "type": "AppendToArrayVariable",
           "inputs": {
             "name": "LogText",
@@ -2141,14 +2146,10 @@
               "@variables('LogTextColNames')?[3]": "Info",
               "@variables('LogTextColNames')?[4]": "Update Sent Report Details Flow Started"
             }
-          },
-          "runAfter": {
-            "Initialize_variable_LogText": [
-              "Succeeded"
-            ]
           }
         },
         "Initialize_variable_LogFilePath": {
+          "runAfter": {},
           "type": "InitializeVariable",
           "inputs": {
             "variables": [
@@ -2158,10 +2159,14 @@
                 "value": "@concat('/Logs/Report Send/',triggerBody()?['ProjectIdDisplay'],'_',formatDateTime(utcNow(), 'yyyy_MM_dd_T_HH_mm_ss'), '_LogText.csv')"
               }
             ]
-          },
-          "runAfter": {}
+          }
         },
         "Log_Text_-_1": {
+          "runAfter": {
+            "Log_Started": [
+              "Succeeded"
+            ]
+          },
           "type": "AppendToArrayVariable",
           "inputs": {
             "name": "LogText",
@@ -2172,14 +2177,14 @@
               "@variables('LogTextColNames')?[3]": "Info",
               "@variables('LogTextColNames')?[4]": "Reading Config Details From Excel"
             }
-          },
-          "runAfter": {
-            "Log_Started": [
-              "Succeeded"
-            ]
           }
         },
         "Log_Text_-_2": {
+          "runAfter": {
+            "Get_config_Data": [
+              "Succeeded"
+            ]
+          },
           "type": "AppendToArrayVariable",
           "inputs": {
             "name": "LogText",
@@ -2190,14 +2195,14 @@
               "@variables('LogTextColNames')?[3]": "Info",
               "@variables('LogTextColNames')?[4]": "Config Details Read Successfully"
             }
-          },
-          "runAfter": {
-            "Get_config_Data": [
-              "Succeeded"
-            ]
           }
         },
         "Log_Text_-_8": {
+          "runAfter": {
+            "Debug_Mode_Check": [
+              "Succeeded"
+            ]
+          },
           "type": "AppendToArrayVariable",
           "inputs": {
             "name": "LogText",
@@ -2208,14 +2213,14 @@
               "@variables('LogTextColNames')?[3]": "Info",
               "@variables('LogTextColNames')?[4]": "Parsing The Report Details"
             }
-          },
-          "runAfter": {
-            "Debug_Mode_Check": [
-              "Succeeded"
-            ]
           }
         },
         "Create_file_LogText_on_OneDrive": {
+          "runAfter": {
+            "Create_CSV_table_-_4": [
+              "Succeeded"
+            ]
+          },
           "type": "OpenApiConnection",
           "inputs": {
             "parameters": {
@@ -2229,11 +2234,6 @@
               "connectionName": "shared_onedrive-1"
             }
           },
-          "runAfter": {
-            "Create_CSV_table_-_4": [
-              "Succeeded"
-            ]
-          },
           "runtimeConfiguration": {
             "contentTransfer": {
               "transferMode": "Chunked"
@@ -2241,18 +2241,24 @@
           }
         },
         "Create_CSV_table_-_4": {
-          "type": "Table",
-          "inputs": {
-            "from": "@variables('LogText')",
-            "format": "CSV"
-          },
           "runAfter": {
             "Log_Text_-_40": [
               "Succeeded"
             ]
+          },
+          "type": "Table",
+          "inputs": {
+            "from": "@variables('LogText')",
+            "format": "CSV"
           }
         },
         "Log_Text_-_Config_Read_Failed": {
+          "runAfter": {
+            "Get_config_Data": [
+              "TimedOut",
+              "Failed"
+            ]
+          },
           "type": "AppendToArrayVariable",
           "inputs": {
             "name": "LogText",
@@ -2263,27 +2269,26 @@
               "@variables('LogTextColNames')?[3]": "Error",
               "@variables('LogTextColNames')?[4]": "Reading Config File Failed"
             }
-          },
-          "runAfter": {
-            "Get_config_Data": [
-              "TimedOut",
-              "Failed"
-            ]
           }
         },
         "Create_CSV_table-Config_Read_Failure": {
-          "type": "Table",
-          "inputs": {
-            "from": "@variables('LogText')",
-            "format": "CSV"
-          },
           "runAfter": {
             "Log_Text_-_Config_Read_Failed": [
               "Succeeded"
             ]
+          },
+          "type": "Table",
+          "inputs": {
+            "from": "@variables('LogText')",
+            "format": "CSV"
           }
         },
         "Create_file_LogText_on_OneDrive-Config_Read_Failure": {
+          "runAfter": {
+            "Create_CSV_table-Config_Read_Failure": [
+              "Succeeded"
+            ]
+          },
           "type": "OpenApiConnection",
           "inputs": {
             "parameters": {
@@ -2297,11 +2302,6 @@
               "connectionName": "shared_onedrive-1"
             }
           },
-          "runAfter": {
-            "Create_CSV_table-Config_Read_Failure": [
-              "Succeeded"
-            ]
-          },
           "runtimeConfiguration": {
             "contentTransfer": {
               "transferMode": "Chunked"
@@ -2309,6 +2309,11 @@
           }
         },
         "Send_Email_-_Support_-_Failed_to_read_Config_Data": {
+          "runAfter": {
+            "Create_file_LogText_on_OneDrive-Config_Read_Failure": [
+              "Succeeded"
+            ]
+          },
           "type": "Http",
           "inputs": {
             "uri": "@body('Get_config_Data')?['EmailTriggerURL']",
@@ -2326,11 +2331,6 @@
               "clientEmailContent": {}
             }
           },
-          "runAfter": {
-            "Create_file_LogText_on_OneDrive-Config_Read_Failure": [
-              "Succeeded"
-            ]
-          },
           "runtimeConfiguration": {
             "contentTransfer": {
               "transferMode": "Chunked"
@@ -2338,6 +2338,11 @@
           }
         },
         "Log_Text_-_40": {
+          "runAfter": {
+            "Get_Report_Details_In_OneDrive": [
+              "Succeeded"
+            ]
+          },
           "type": "AppendToArrayVariable",
           "inputs": {
             "name": "LogText",
@@ -2348,14 +2353,17 @@
               "@variables('LogTextColNames')?[3]": "Info",
               "@variables('LogTextColNames')?[4]": "Saving Logfile to OneDrive and calling desktop flow"
             }
-          },
-          "runAfter": {
-            "Get_Report_Details_In_OneDrive": [
-              "Succeeded"
-            ]
           }
         },
         "Get_details_of_Current_EstimateNo": {
+          "runAfter": {
+            "Initialize_variable_CurrentReptVer": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "E550BD3B3E47E33!109": "/Estimates/FetchedEstimateDetails.xlsx"
+          },
           "type": "OpenApiConnection",
           "inputs": {
             "parameters": {
@@ -2369,28 +2377,9 @@
               "operationId": "GetItem",
               "connectionName": "shared_excelonline-1"
             }
-          },
-          "runAfter": {
-            "Initialize_variable_CurrentReptVer": [
-              "Succeeded"
-            ]
-          },
-          "metadata": {
-            "E550BD3B3E47E33!109": "/Estimates/FetchedEstimateDetails.xlsx"
           }
         },
         "If_CurrentReportVersion_Is_Not_Empty": {
-          "type": "If",
-          "expression": {
-            "and": [
-              {
-                "equals": [
-                  "@empty(trim(body('Get_details_of_Current_EstimateNo')?['CurrentReportVersion']))",
-                  "@false"
-                ]
-              }
-            ]
-          },
           "actions": {
             "find_csv_files": {
               "type": "OpenApiConnection",
@@ -2408,7 +2397,6 @@
               }
             },
             "Apply_to_each_csv_file": {
-              "type": "Foreach",
               "foreach": "@body('find_csv_files')",
               "actions": {
                 "Delete_file": {
@@ -2429,9 +2417,15 @@
                 "find_csv_files": [
                   "Succeeded"
                 ]
-              }
+              },
+              "type": "Foreach"
             },
             "Log_Text_-_30": {
+              "runAfter": {
+                "Apply_to_each_csv_file": [
+                  "Succeeded"
+                ]
+              },
               "type": "AppendToArrayVariable",
               "inputs": {
                 "name": "LogText",
@@ -2442,51 +2436,38 @@
                   "@variables('LogTextColNames')?[3]": "Info",
                   "@variables('LogTextColNames')?[4]": "Report Is Updated - Getting Report Version"
                 }
-              },
-              "runAfter": {
-                "Apply_to_each_csv_file": [
-                  "Succeeded"
-                ]
               }
             },
             "Set_variable_IsUpdate_to_True": {
-              "type": "SetVariable",
-              "inputs": {
-                "name": "IsUpdate",
-                "value": true
-              },
               "runAfter": {
                 "Log_Text_-_30": [
                   "Succeeded"
                 ]
+              },
+              "type": "SetVariable",
+              "inputs": {
+                "name": "IsUpdate",
+                "value": true
               }
             },
             "Set_variable_CurrentRepVersion": {
-              "type": "SetVariable",
-              "inputs": {
-                "name": "CurrentReptVer",
-                "value": "@int(trim(body('Get_details_of_Current_EstimateNo')?['CurrentReportVersion']))"
-              },
               "runAfter": {
                 "Set_variable_IsUpdate_to_True": [
                   "Succeeded"
                 ]
+              },
+              "type": "SetVariable",
+              "inputs": {
+                "name": "CurrentReptVer",
+                "value": "@int(trim(body('Get_details_of_Current_EstimateNo')?['CurrentReportVersion']))"
               }
             },
             "If_Status_is_SNTREPUPDT": {
-              "type": "If",
-              "expression": {
-                "and": [
-                  {
-                    "contains": [
-                      "@body('Get_details_of_Current_EstimateNo')?['Status']",
-                      "SNTREPUPDT"
-                    ]
-                  }
-                ]
-              },
               "actions": {
                 "Update_the_Incremented_CurrentReportVersion": {
+                  "metadata": {
+                    "E550BD3B3E47E33!109": "/Estimates/FetchedEstimateDetails.xlsx"
+                  },
                   "type": "OpenApiConnection",
                   "inputs": {
                     "parameters": {
@@ -2501,21 +2482,34 @@
                       "operationId": "PatchItem",
                       "connectionName": "shared_excelonline-1"
                     }
-                  },
-                  "metadata": {
-                    "E550BD3B3E47E33!109": "/Estimates/FetchedEstimateDetails.xlsx"
                   }
                 }
-              },
-              "else": {
-                "actions": {}
               },
               "runAfter": {
                 "Set_variable_CurrentRepVersion": [
                   "Succeeded"
                 ]
-              }
+              },
+              "else": {
+                "actions": {}
+              },
+              "expression": {
+                "and": [
+                  {
+                    "contains": [
+                      "@body('Get_details_of_Current_EstimateNo')?['Status']",
+                      "SNTREPUPDT"
+                    ]
+                  }
+                ]
+              },
+              "type": "If"
             }
+          },
+          "runAfter": {
+            "Get_details_of_Current_EstimateNo": [
+              "Succeeded"
+            ]
           },
           "else": {
             "actions": {
@@ -2533,18 +2527,26 @@
                 }
               },
               "Set_variable_IsUpdate_to_False": {
-                "type": "SetVariable",
-                "inputs": {
-                  "name": "IsUpdate",
-                  "value": false
-                },
                 "runAfter": {
                   "Log_Text_-_31": [
                     "Succeeded"
                   ]
+                },
+                "type": "SetVariable",
+                "inputs": {
+                  "name": "IsUpdate",
+                  "value": false
                 }
               },
               "Update_CurrentReportVersion_to_1": {
+                "runAfter": {
+                  "Set_variable_CurrentRepVersion_to_1": [
+                    "Succeeded"
+                  ]
+                },
+                "metadata": {
+                  "E550BD3B3E47E33!109": "/Estimates/FetchedEstimateDetails.xlsx"
+                },
                 "type": "OpenApiConnection",
                 "inputs": {
                   "parameters": {
@@ -2559,35 +2561,33 @@
                     "operationId": "PatchItem",
                     "connectionName": "shared_excelonline-1"
                   }
-                },
-                "runAfter": {
-                  "Set_variable_CurrentRepVersion_to_1": [
-                    "Succeeded"
-                  ]
-                },
-                "metadata": {
-                  "E550BD3B3E47E33!109": "/Estimates/FetchedEstimateDetails.xlsx"
                 }
               },
               "Set_variable_CurrentRepVersion_to_1": {
-                "type": "SetVariable",
-                "inputs": {
-                  "name": "CurrentReptVer",
-                  "value": 1
-                },
                 "runAfter": {
                   "Set_variable_IsUpdate_to_False": [
                     "Succeeded"
                   ]
+                },
+                "type": "SetVariable",
+                "inputs": {
+                  "name": "CurrentReptVer",
+                  "value": 1
                 }
               }
             }
           },
-          "runAfter": {
-            "Get_details_of_Current_EstimateNo": [
-              "Succeeded"
+          "expression": {
+            "and": [
+              {
+                "equals": [
+                  "@empty(trim(body('Get_details_of_Current_EstimateNo')?['CurrentReportVersion']))",
+                  "@false"
+                ]
+              }
             ]
-          }
+          },
+          "type": "If"
         }
       },
       "outputs": {}
